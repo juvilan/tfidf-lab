@@ -12,6 +12,75 @@
       .replace(/"/g, "&quot;");
   }
 
+  const BACKSLASH = String.fromCharCode(92);
+  const REGEXP_SPECIALS = new Set([
+    ".", "*", "+", "?", "^", "$", "{", "}", "(", ")", "|", "[", "]", BACKSLASH,
+  ]);
+
+  function escapeRegExp(value) {
+    return [...String(value)]
+      .map((character) => (REGEXP_SPECIALS.has(character) ? BACKSLASH + character : character))
+      .join("");
+  }
+
+  // 빈 줄을 경계로 문단을 나눈다.
+  function toParagraphs(text) {
+    const paragraphs = [];
+    let buffer = [];
+
+    for (const line of String(text || "").split(String.fromCharCode(10))) {
+      const trimmed = line.trim();
+      if (trimmed) {
+        buffer.push(trimmed);
+      } else if (buffer.length > 0) {
+        paragraphs.push(buffer.join(" "));
+        buffer = [];
+      }
+    }
+
+    if (buffer.length > 0) {
+      paragraphs.push(buffer.join(" "));
+    }
+
+    return paragraphs;
+  }
+
+  // 원문을 문단째 보여 준다. terms를 주면 그 말이 나온 자리에 표시를 남긴다.
+  // 정규화형(국민)이 아니라 원문 표면형(국민이, 국민의)으로 찾아야
+  // 어절 중간에서 끊기지 않는다.
+  function renderArticleBody(text, terms) {
+    const paragraphs = toParagraphs(text);
+
+    const unique = [...new Set((terms || []).filter(Boolean))];
+    const pattern = unique
+      .slice()
+      .sort((a, b) => b.length - a.length)
+      .map(escapeRegExp)
+      .join("|");
+
+    return paragraphs
+      .map((paragraph) => {
+        if (!pattern) {
+          return `<p>${escapeHtml(paragraph)}</p>`;
+        }
+
+        const regex = new RegExp(pattern, "gi");
+        const parts = [];
+        let last = 0;
+
+        for (const match of paragraph.matchAll(regex)) {
+          const at = match.index || 0;
+          parts.push(escapeHtml(paragraph.slice(last, at)));
+          parts.push(`<mark>${escapeHtml(match[0])}</mark>`);
+          last = at + match[0].length;
+        }
+
+        parts.push(escapeHtml(paragraph.slice(last)));
+        return `<p>${parts.join("")}</p>`;
+      })
+      .join("");
+  }
+
   // ---------- 글 고르기 ----------
 
   function renderSections(container, sections, pickedIds) {
@@ -34,6 +103,10 @@
                       ${pickedIds.has(article.id) ? "checked" : ""} />
                     <span>${escapeHtml(article.title)}</span>
                   </label>
+                  <details class="peek">
+                    <summary>본문 읽기</summary>
+                    <div class="article-body">${renderArticleBody(article.text)}</div>
+                  </details>
                 </li>`,
               )
               .join("")}
@@ -64,6 +137,10 @@
                     <span><span class="from">${escapeHtml(article.sectionLabel)}</span>
                       ${escapeHtml(article.title)}</span>
                   </label>
+                  <details class="peek">
+                    <summary>본문 읽기</summary>
+                    <div class="article-body">${renderArticleBody(article.text)}</div>
+                  </details>
                 </li>`,
               )
               .join("")}
@@ -84,12 +161,18 @@
       .map(
         (document) => `
         <div class="basket-item">
-          <span class="tag ${document.fictional ? "section" : "mine"}">${escapeHtml(
-            document.sectionLabel || "내 글",
-          )}</span>
-          <span class="title">${escapeHtml(document.title)}</span>
-          ${document.fictional ? '<span class="tag fictional">가상 기사</span>' : ""}
-          <button class="button tiny" type="button" data-remove-doc="${document.id}">빼기</button>
+          <div class="basket-head">
+            <span class="tag ${document.fictional ? "section" : "mine"}">${escapeHtml(
+              document.sectionLabel || "내 글",
+            )}</span>
+            <span class="title">${escapeHtml(document.title)}</span>
+            ${document.fictional ? '<span class="tag fictional">가상 기사</span>' : ""}
+            <button class="button tiny" type="button" data-remove-doc="${document.id}">빼기</button>
+          </div>
+          <details class="peek">
+            <summary>본문 읽기</summary>
+            <div class="article-body">${renderArticleBody(document.text)}</div>
+          </details>
         </div>`,
       )
       .join("");
@@ -180,6 +263,21 @@
                     </div>`,
                   )
                   .join("")
+          }
+          ${
+            document.topKeywords.length === 0
+              ? ""
+              : `<details class="peek">
+                  <summary>원문에서 확인하기 (상위 3개 표시)</summary>
+                  <div class="article-body">${renderArticleBody(
+                    document.text,
+                    document.topKeywords
+                      .slice(0, 3)
+                      .flatMap((keyword) => [
+                        ...(document.surfaceForms.get(keyword.term) || [keyword.term]),
+                      ]),
+                  )}</div>
+                </details>`
           }
         </article>`,
       )
@@ -304,6 +402,7 @@
 
   namespace.render = {
     escapeHtml,
+    renderArticleBody,
     renderBasket,
     renderCustomChips,
     renderDfIdfTable,
