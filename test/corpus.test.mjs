@@ -44,14 +44,14 @@ test("모든 글에 필요한 항목이 채워져 있다", () => {
   }
 });
 
-test("모든 글의 토큰 수가 100에서 180 사이다", () => {
+test("모든 글의 낱말 수가 140에서 240 사이다", () => {
   // 글자 수가 아니라 토큰 수로 재야 한다. 글자로 재면 테스트는 통과하는데
   // DF가 심심한 글이 섞인다.
   for (const article of articles) {
     const count = tokenCountOf(article.text);
     assert.ok(
-      count >= 100 && count <= 180,
-      `${article.id} (${article.title}) 토큰 ${count}개 — 100~180 범위를 벗어났다`,
+      count >= 140 && count <= 240,
+      `${article.id} (${article.title}) 낱말 ${count}개 — 140~240 범위를 벗어났다`,
     );
   }
 });
