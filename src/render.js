@@ -215,7 +215,7 @@
         const keptCount = preset.words.filter((word) => kept.has(word)).length;
 
         return `
-        <details class="preset">
+        <details class="preset" data-open-key="preset:${preset.id}">
           <summary>
             <span class="preset-row">
               <input type="checkbox" data-toggle-preset="${preset.id}"
@@ -327,7 +327,7 @@
           ${
             document.topKeywords.length === 0
               ? ""
-              : `<details class="peek">
+              : `<details class="peek" data-open-key="peek:${document.id}">
                   <summary>원문에서 확인하기 (상위 3개 표시)</summary>
                   <div class="article-body">${renderArticleBody(
                     document.text,
@@ -368,7 +368,7 @@
     container.innerHTML = groups
       .map(
         (group) => `
-        <details class="removed-group">
+        <details class="removed-group" data-open-key="removed:${group.key}">
           <summary>${escapeHtml(group.label)} — ${group.entries.length}종
             (모두 ${group.entries.reduce((sum, entry) => sum + entry[1], 0)}번)</summary>
           <p class="removed-hint">낱말을 누르면 되살립니다.</p>

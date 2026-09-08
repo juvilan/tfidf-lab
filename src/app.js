@@ -156,6 +156,25 @@
     }
   }
 
+  // innerHTML로 다시 그리면 펼쳐 둔 details가 닫히고 스크롤이 튄다.
+  // 낱말을 하나 누를 때마다 목록이 접히면 여러 개를 고를 수가 없다.
+  function keepOpenState(render) {
+    const open = new Set(
+      [...document.querySelectorAll("details[data-open-key][open]")].map((details) =>
+        details.getAttribute("data-open-key"),
+      ),
+    );
+    const scroll = window.scrollY;
+
+    render();
+
+    for (const details of document.querySelectorAll("details[data-open-key]")) {
+      details.open = open.has(details.getAttribute("data-open-key"));
+    }
+
+    window.scrollTo({ top: scroll });
+  }
+
   function setStatus(message, tone) {
     ui.status.textContent = message;
     ui.status.className = `status${tone ? ` ${tone}` : ""}`;
@@ -186,7 +205,9 @@
 
   function refreshStopwordPanel() {
     const kept = new Set(state.keepWords);
-    render.renderPresets(ui.presetList, stopwords.PRESETS, state.presetIds, kept);
+    keepOpenState(() => {
+      render.renderPresets(ui.presetList, stopwords.PRESETS, state.presetIds, kept);
+    });
     render.renderCustomChips(ui.customChips, state.customWords);
     render.renderKeepChips(ui.keepChips, state.keepWords);
     ui.customCount.textContent = String(state.customWords.length);
@@ -276,12 +297,14 @@
     const limit = Math.max(0, settings.visibleTerms);
     const rows = limit === 0 ? analysis.rows : analysis.rows.slice(0, limit);
 
-    render.renderTally(ui.tally, analysis);
-    render.renderSummaries(ui.summaries, analysis);
-    render.renderRemoved(ui.removed, analysis);
-    render.renderDfIdfTable(ui.dfidfTable, analysis, rows);
-    render.renderMatrix(ui.tfTable, analysis, rows, "tf");
-    render.renderMatrix(ui.tfidfTable, analysis, rows, "tfidf");
+    keepOpenState(() => {
+      render.renderTally(ui.tally, analysis);
+      render.renderSummaries(ui.summaries, analysis);
+      render.renderRemoved(ui.removed, analysis);
+      render.renderDfIdfTable(ui.dfidfTable, analysis, rows);
+      render.renderMatrix(ui.tfTable, analysis, rows, "tf");
+      render.renderMatrix(ui.tfidfTable, analysis, rows, "tfidf");
+    });
     ui.idfCaption.textContent = `IDF = ${analysis.idfModeMeta.formula} (N은 글 수, DF는 그 낱말이 나온 글 수)`;
 
     const messages = [
