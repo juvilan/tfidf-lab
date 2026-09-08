@@ -28,10 +28,10 @@
     customInput: el("#custom-input"),
     analyze: el("#analyze"),
     status: el("#status"),
-    results: el("#results"),
     tally: el("#tally"),
     summaries: el("#summaries"),
     removed: el("#removed"),
+    reading: el("#reading"),
     idfCaption: el("#idf-caption"),
     dfidfTable: el("#dfidf-table"),
     tfTable: el("#tf-table"),
@@ -39,6 +39,7 @@
   };
 
   const state = {
+    step: 1,
     documents: [],
     presetIds: new Set(stopwords.defaultPresetIds()),
     customWords: [],
@@ -116,6 +117,55 @@
       ui.keepOriginal.checked = settings.keepOriginal;
   }
 
+  // 단계는 한 번에 하나만 보인다. 한 화면에 다 펼쳐 놓으면
+  // 지금 무엇을 하는 중인지 알기 어렵다.
+  const STEP_COUNT = 4;
+
+  function stepReady(step) {
+    if (step === 1) return true;
+    if (step === 4) return state.analysis !== null;
+    return state.documents.length > 0;
+  }
+
+  function goToStep(step) {
+    const target = Math.min(Math.max(1, step), STEP_COUNT);
+
+    if (!stepReady(target)) {
+      setStatus(
+        target === 4
+          ? "먼저 3단계에서 계산하기를 눌러 주세요."
+          : "먼저 글을 한 편 이상 담아 주세요.",
+        "warn",
+      );
+      return;
+    }
+
+    state.step = target;
+
+    for (const section of document.querySelectorAll(".step")) {
+      section.classList.toggle("hidden", Number(section.dataset.step) !== target);
+    }
+
+    for (const chip of document.querySelectorAll(".step-chip")) {
+      const number = Number(chip.dataset.goto);
+      chip.classList.toggle("is-current", number === target);
+      chip.classList.toggle("is-done", number < target);
+      chip.disabled = !stepReady(number);
+    }
+
+    if (target === 2) {
+      render.renderReading(ui.reading, state.documents);
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function refreshStepChips() {
+    for (const chip of document.querySelectorAll(".step-chip")) {
+      chip.disabled = !stepReady(Number(chip.dataset.goto));
+    }
+  }
+
   function setStatus(message, tone) {
     ui.status.textContent = message;
     ui.status.className = `status${tone ? ` ${tone}` : ""}`;
@@ -141,6 +191,7 @@
     render.renderThemes(ui.themeList, corpus.listThemes(), picked);
     render.renderBasket(ui.basketList, state.documents);
     ui.basketCount.textContent = String(state.documents.length);
+    refreshStepChips();
   }
 
   function refreshStopwordPanel() {
@@ -178,7 +229,6 @@
   function analyze() {
     if (state.documents.length === 0) {
       setStatus("먼저 글을 담아 주세요.", "warn");
-      ui.results.classList.add("hidden");
       return;
     }
 
@@ -198,7 +248,6 @@
 
     if (analysis.rows.length === 0) {
       setStatus("남은 낱말이 없습니다. 뺀 낱말이나 설정을 다시 살펴 주세요.", "warn");
-      ui.results.classList.add("hidden");
       return;
     }
 
@@ -212,7 +261,6 @@
     render.renderMatrix(ui.tfTable, analysis, rows, "tf");
     render.renderMatrix(ui.tfidfTable, analysis, rows, "tfidf");
     ui.idfCaption.textContent = `IDF = ${analysis.idfModeMeta.formula} (N은 글 수, DF는 그 낱말이 나온 글 수)`;
-    ui.results.classList.remove("hidden");
 
     const messages = [
       `글 ${analysis.documentCount}편에서 서로 다른 낱말 ${analysis.rows.length}개를 찾았습니다.`,
@@ -347,7 +395,7 @@
     state.analysis = null;
     refreshPickers();
     clearStorage();
-    ui.results.classList.add("hidden");
+    goToStep(1);
     setStatus("담은 글을 모두 비웠습니다.");
   });
 
@@ -434,7 +482,16 @@
     });
   }
 
-  ui.analyze.addEventListener("click", () => analyze());
+  ui.analyze.addEventListener("click", () => {
+    analyze();
+    if (state.analysis && state.analysis.rows.length > 0) {
+      goToStep(4);
+    }
+  });
+
+  for (const button of document.querySelectorAll("[data-goto]")) {
+    button.addEventListener("click", () => goToStep(Number(button.dataset.goto)));
+  }
 
   for (const tab of document.querySelectorAll(".tab")) {
     tab.addEventListener("click", () => {
@@ -471,4 +528,5 @@
 
   refreshPickers();
   refreshStopwordPanel();
+  goToStep(1);
 })(typeof window !== "undefined" ? window : globalThis);

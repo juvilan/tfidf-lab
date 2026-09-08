@@ -12,199 +12,369 @@
         <p class="eyebrow">고등학교 인공지능수학 실습 도구</p>
         <h1>핵심어 찾기 실험실</h1>
         <p class="lede">
-          글을 여러 편 넣으면 <strong>TF</strong>, <strong>DF · IDF</strong>,
-          <strong>TF-IDF</strong>를 계산합니다. 세는 일과 계산은 도구가 맡고,
-          <strong>어떤 낱말을 뺄지는 여러분이 정합니다.</strong>
+          글 여러 편을 견주어 <strong>그 글에서만 두드러지는 낱말</strong>을 찾습니다.
+          세는 일과 계산은 도구가 맡고, 어떤 낱말을 뺄지는 여러분이 정합니다.
         </p>
       </header>
 
-      <!-- 1. 글 고르기 -->
-      <section class="panel" aria-labelledby="picker-heading">
-        <div class="panel-head">
-          <h2 id="picker-heading">글 고르기</h2>
-          <p>예시 글 35편은 모두 수업용으로 지어낸 글입니다. 실제 보도가 아닙니다.</p>
-        </div>
+      <!-- 단계 표시기 -->
+      <nav class="steps" aria-label="진행 단계">
+        <button class="step-chip is-current" type="button" data-goto="1">
+          <span class="num">1</span>
+          <span class="name">글 고르기</span>
+        </button>
+        <button class="step-chip" type="button" data-goto="2">
+          <span class="num">2</span>
+          <span class="name">읽어 보기</span>
+        </button>
+        <button class="step-chip" type="button" data-goto="3">
+          <span class="num">3</span>
+          <span class="name">계산 방법 정하기</span>
+        </button>
+        <button class="step-chip" type="button" data-goto="4">
+          <span class="num">4</span>
+          <span class="name">결과 보고 다듬기</span>
+        </button>
+      </nav>
 
-        <div class="tabs" role="tablist" aria-label="글 고르는 방법">
-          <button class="tab is-active" role="tab" type="button" data-tab="sections" aria-selected="true">
-            섹션별
-          </button>
-          <button class="tab" role="tab" type="button" data-tab="themes" aria-selected="false">
-            테마별
-          </button>
-          <button class="tab" role="tab" type="button" data-tab="own" aria-selected="false">
-            직접 넣기
-          </button>
-        </div>
+      <section id="status" class="status" aria-live="polite"></section>
 
-        <div id="tab-sections" class="tab-body" role="tabpanel">
-          <div id="section-list" class="card-grid"></div>
-        </div>
-
-        <div id="tab-themes" class="tab-body hidden" role="tabpanel">
-          <p class="hint">
-            섹션이 달라도 같은 낱말이 나오도록 묶은 꾸러미입니다.
-            섹션별로 넣을 때와 결과가 어떻게 달라지는지 견주어 보세요.
+      <!-- ============ 1단계 ============ -->
+      <section class="step" data-step="1">
+        <div class="guide">
+          <h2>1단계 · 견주어 볼 글을 고릅니다</h2>
+          <p>
+            TF-IDF는 <strong>글 한 편만 보고는 아무것도 말해 주지 못합니다.</strong>
+            어떤 낱말이 특별한지 알려면 견줄 상대가 있어야 하기 때문입니다.
+            <strong>두 편 이상</strong>, 되도록 다섯 편을 담아 주세요.
           </p>
-          <div id="theme-list" class="card-grid"></div>
+          <p class="tip">
+            <strong>해 볼 만한 것</strong> — 같은 섹션 다섯 편을 담을 때와
+            테마 다섯 편을 담을 때 결과가 어떻게 달라지는지 견주어 보세요.
+            같은 다섯 편이라도 무엇과 묶느냐에 따라 핵심어가 달라집니다.
+          </p>
         </div>
 
-        <div id="tab-own" class="tab-body hidden" role="tabpanel">
-          <label class="field">
-            <span>제목</span>
-            <input id="own-title" type="text" placeholder="예: 내가 쓴 글" />
-          </label>
-          <label class="field">
-            <span>내용</span>
-            <textarea id="own-text" rows="6" placeholder="글을 붙여 넣으세요."></textarea>
-          </label>
-          <button id="own-add" class="button primary" type="button">이 글 담기</button>
-        </div>
-      </section>
-
-      <!-- 2. 담은 글 -->
-      <section class="panel" aria-labelledby="basket-heading">
-        <div class="panel-head">
-          <div>
-            <h2 id="basket-heading">담은 글 <span id="basket-count" class="count-badge">0</span></h2>
-            <p>TF-IDF는 글을 여러 편 견주어야 뜻이 생깁니다. 두 편 이상 담아 주세요.</p>
+        <div class="panel">
+          <div class="tabs" role="tablist" aria-label="글 고르는 방법">
+            <button class="tab is-active" role="tab" type="button" data-tab="sections" aria-selected="true">
+              섹션별
+            </button>
+            <button class="tab" role="tab" type="button" data-tab="themes" aria-selected="false">
+              테마별
+            </button>
+            <button class="tab" role="tab" type="button" data-tab="own" aria-selected="false">
+              직접 넣기
+            </button>
           </div>
-          <button id="basket-clear" class="button ghost" type="button">모두 비우기</button>
+
+          <div id="tab-sections" class="tab-body" role="tabpanel">
+            <p class="hint">
+              한 분야의 글 다섯 편입니다. 그 분야에서 늘 쓰는 낱말은
+              다섯 편 모두에 나오므로 <strong>핵심어가 되지 못합니다.</strong>
+              그 장면을 보는 것이 이 묶음의 목적입니다.
+            </p>
+            <div id="section-list" class="card-grid"></div>
+          </div>
+
+          <div id="tab-themes" class="tab-body hidden" role="tabpanel">
+            <p class="hint">
+              섹션이 서로 다른 다섯 편인데도 같은 낱말이 나오도록 묶었습니다.
+              분야가 갈리면 공통 낱말이 적어져 <strong>더 많은 낱말이 살아남습니다.</strong>
+            </p>
+            <div id="theme-list" class="card-grid"></div>
+          </div>
+
+          <div id="tab-own" class="tab-body hidden" role="tabpanel">
+            <p class="hint">
+              신문 기사, 교과서 한 단원, 직접 쓴 글 무엇이든 넣을 수 있습니다.
+              300자보다 길어야 결과가 뚜렷합니다.
+            </p>
+            <label class="field">
+              <span>제목</span>
+              <input id="own-title" type="text" placeholder="예: 내가 쓴 글" />
+            </label>
+            <label class="field">
+              <span>내용</span>
+              <textarea id="own-text" rows="7" placeholder="글을 붙여 넣으세요."></textarea>
+            </label>
+            <button id="own-add" class="button primary" type="button">이 글 담기</button>
+          </div>
         </div>
-        <div id="basket-list" class="basket"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>담은 글 <span id="basket-count" class="count-badge">0</span></h2>
+              <p>여기 담긴 글끼리만 견줍니다.</p>
+            </div>
+            <button id="basket-clear" class="button ghost" type="button">모두 비우기</button>
+          </div>
+          <div id="basket-list" class="basket"></div>
+        </div>
+
+        <div class="step-nav">
+          <span></span>
+          <button class="button primary large" type="button" data-goto="2">
+            읽어 보기로 →
+          </button>
+        </div>
       </section>
 
-      <!-- 3. 설정 -->
-      <section class="panel" aria-labelledby="settings-heading">
-        <div class="panel-head">
-          <h2 id="settings-heading">계산 설정</h2>
+      <!-- ============ 2단계 ============ -->
+      <section class="step hidden" data-step="2">
+        <div class="guide">
+          <h2>2단계 · 글을 읽고 짐작해 봅니다</h2>
+          <p>
+            계산하기 전에 먼저 읽어 보세요. 그리고
+            <strong>「이 글의 핵심어는 무엇일까」</strong>를 각자 두세 개씩 적어 둡니다.
+          </p>
+          <p class="tip">
+            <strong>왜 미리 적나요</strong> — 나중에 계산 결과와 견주기 위해서입니다.
+            사람이 고른 핵심어와 수식이 고른 핵심어가 어디서 같고 어디서 다른지가
+            이 수업의 알맹이입니다. 자주 나온 낱말이 핵심어일 것 같지만,
+            꼭 그렇지 않다는 것을 곧 보게 됩니다.
+          </p>
         </div>
 
-        <div class="settings-grid">
+        <div id="reading" class="reading"></div>
+
+        <div class="step-nav">
+          <button class="button" type="button" data-goto="1">← 글 고르기</button>
+          <button class="button primary large" type="button" data-goto="3">
+            계산 방법 정하기 →
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ 3단계 ============ -->
+      <section class="step hidden" data-step="3">
+        <div class="guide">
+          <h2>3단계 · 어떻게 계산할지 정합니다</h2>
+          <p>
+            기본값 그대로 두고 계산해도 됩니다. 아래 설명을 읽고
+            하나씩 바꿔 가며 결과가 어떻게 달라지는지 살펴보세요.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>IDF 계산 방식</h2></div>
+          <p class="hint">
+            IDF는 <strong>「그 낱말이 얼마나 드문가」</strong>를 나타내는 수입니다.
+            여러 글에 두루 나오는 낱말일수록 작아집니다.
+            N은 글 수, DF는 그 낱말이 나온 글의 수입니다.
+          </p>
           <fieldset class="choice-group">
-            <legend>IDF 계산 방식</legend>
+            <legend class="sr-only">IDF 계산 방식</legend>
             <label class="choice">
               <input id="idf-ratio" type="radio" name="idf-mode" value="ratio" checked />
-              <span><strong>비율형</strong><small>IDF = N / DF</small></span>
+              <span>
+                <strong>비율형 — IDF = N / DF</strong>
+                <small>
+                  다섯 편 모두에 나오면 5/5 = 1, 한 편에만 나오면 5/1 = 5.
+                  나눗셈만 하면 되어 이해하기 쉽습니다. 다만 아무리 흔해도 1보다 작아지지 않습니다.
+                </small>
+              </span>
             </label>
             <label class="choice">
               <input id="idf-log10" type="radio" name="idf-mode" value="log10" />
-              <span><strong>상용로그형</strong><small>IDF = log10(N / DF)</small></span>
+              <span>
+                <strong>상용로그형 — IDF = log10(N / DF)</strong>
+                <small>
+                  실제로 쓰는 방식입니다. 다섯 편 모두에 나오면 log10(1) = 0이 되어
+                  <strong>점수가 0으로 사라집니다.</strong> 흔한 낱말을 확실히 눌러 줍니다.
+                </small>
+              </span>
             </label>
           </fieldset>
+        </div>
 
-          <div class="option-stack">
-            <label class="field inline">
-              <span>가장 짧은 낱말 길이</span>
-              <input id="min-length" type="number" min="1" max="6" value="2" />
-            </label>
-            <label class="field inline">
-              <span>표에 보여줄 낱말 수</span>
-              <input id="visible-terms" type="number" min="0" max="500" value="40" />
-            </label>
-            <label class="check">
-              <input id="exclude-numbers" type="checkbox" checked />
-              <span>숫자만 있는 낱말 빼기</span>
-            </label>
-            <label class="check">
-              <input id="exclude-verbs" type="checkbox" checked />
-              <span>서술어 빼기 <small>있습니다, 하겠습니다 같은 말</small></span>
-            </label>
-            <label class="check">
-              <input id="keep-original" type="checkbox" />
-              <span>원문 그대로 쓰기 <small>조사·어미를 손대지 않습니다</small></span>
-            </label>
+        <div class="panel">
+          <div class="panel-head"><h2>낱말을 세는 기준</h2></div>
+          <div class="settings-grid">
+            <div class="option-stack">
+              <label class="field inline">
+                <span>가장 짧은 낱말 길이</span>
+                <input id="min-length" type="number" min="1" max="6" value="2" />
+              </label>
+              <p class="hint">
+                2로 두면 한 글자 낱말을 셈에서 뺍니다. 1로 낮추면 「수」, 「것」 같은 말도 셉니다.
+              </p>
+              <label class="field inline">
+                <span>표에 보여줄 낱말 수</span>
+                <input id="visible-terms" type="number" min="0" max="500" value="40" />
+              </label>
+              <p class="hint">계산은 모든 낱말로 하고, 표에만 상위 몇 개를 보여 줍니다. 0을 넣으면 전부 봅니다.</p>
+            </div>
+
+            <div class="option-stack">
+              <label class="check">
+                <input id="exclude-numbers" type="checkbox" checked />
+                <span>숫자만 있는 낱말 빼기 <small>0.3, 2026 같은 것</small></span>
+              </label>
+              <label class="check">
+                <input id="exclude-verbs" type="checkbox" checked />
+                <span>
+                  서술어 빼기
+                  <small>
+                    「있습니다」, 「하겠습니다」처럼 문장을 맺는 말입니다.
+                    명사처럼 세어지면 핵심어 자리를 빼앗습니다.
+                  </small>
+                </span>
+              </label>
+              <label class="check">
+                <input id="keep-original" type="checkbox" />
+                <span>
+                  원문 그대로 쓰기
+                  <small>
+                    조사와 어미를 손대지 않습니다. 「국민이」와 「국민을」이
+                    서로 다른 낱말로 세어집니다. AI로 명사만 뽑아 정리한 글을 넣을 때 켜세요.
+                  </small>
+                </span>
+              </label>
+            </div>
           </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="button" type="button" data-goto="2">← 읽어 보기</button>
+          <button id="analyze" class="button primary large" type="button">계산하기 →</button>
         </div>
       </section>
 
-      <!-- 4. 불용어 -->
-      <section class="panel" aria-labelledby="stopword-heading">
-        <div class="panel-head">
-          <h2 id="stopword-heading">뺄 낱말 고르기</h2>
+      <!-- ============ 4단계 ============ -->
+      <section class="step hidden" data-step="4">
+        <div class="guide">
+          <h2>4단계 · 결과를 보고 걸러 냅니다</h2>
           <p>
-            무엇을 빼야 하는지는 글에 따라 다릅니다. 정답이 정해져 있지 않으니
-            결과를 보고 직접 골라 보세요.
+            결과 표에서 낱말 옆 <strong>&times;</strong>를 누르면 그 낱말이 빠지고
+            바로 다시 계산됩니다. 핵심어 같지 않은 말이 위에 있으면 눌러서 빼 보세요.
+            <strong>빼고 → 다시 보고 → 또 빼는 것이 이 단계의 전부입니다.</strong>
+          </p>
+          <p class="tip">
+            <strong>견주어 볼 것</strong> — 2단계에서 각자 적어 둔 핵심어와 견주어 보세요.
+            맞힌 낱말은 왜 맞혔고, 빗나간 낱말은 왜 빗나갔을까요?
           </p>
         </div>
 
-        <div id="preset-list" class="preset-list"></div>
+        <details class="explain">
+          <summary>TF, DF, IDF가 무엇인지 다시 보기</summary>
+          <div class="explain-body">
+            <dl>
+              <dt>TF <span class="formula">그 글에 나온 횟수 ÷ 그 글의 낱말 수</span></dt>
+              <dd>
+                그 글에서 얼마나 자주 나왔는지입니다. 긴 글일수록 횟수가 커지므로
+                글의 길이로 나누어 견줄 수 있게 만듭니다.
+              </dd>
+              <dt>DF <span class="formula">그 낱말이 나온 글의 수</span></dt>
+              <dd>몇 편에 나왔는지 셉니다. 다섯 편 모두에 나오면 DF는 5입니다.</dd>
+              <dt>IDF <span class="formula">N / DF 또는 log10(N / DF)</span></dt>
+              <dd>
+                DF가 클수록 작아집니다. <strong>여기저기 다 나오는 낱말을 눌러 주는 몫</strong>입니다.
+              </dd>
+              <dt>TF-IDF <span class="formula">TF × IDF</span></dt>
+              <dd>
+                자주 나오면서 <strong>동시에</strong> 다른 글에는 잘 없는 낱말이 높은 점수를 받습니다.
+                많이 나온 낱말이 아니라 <strong>여기서만 많이 나온 낱말</strong>을 찾는 것입니다.
+              </dd>
+            </dl>
+          </div>
+        </details>
 
-        <div class="stopword-mine">
-          <h3>내가 뺀 낱말 <span id="custom-count" class="count-badge">0</span></h3>
-          <p class="hint">아래 결과 표에서 낱말 옆 &times;를 누르면 여기로 옵니다. 칩을 누르면 되돌립니다.</p>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>뺄 낱말 고르기</h2>
+              <p>무엇을 빼야 하는지는 글에 따라 다릅니다. 정답이 정해져 있지 않습니다.</p>
+            </div>
+          </div>
+
+          <h3 class="sub">묶음으로 빼기</h3>
+          <p class="hint">
+            체크하면 그 묶음의 낱말이 한 번에 빠집니다. 이름을 눌러 어떤 낱말이 들어 있는지 볼 수 있습니다.
+          </p>
+          <div id="preset-list" class="preset-list"></div>
+
+          <h3 class="sub">내가 뺀 낱말 <span id="custom-count" class="count-badge">0</span></h3>
+          <p class="hint">아래 표에서 낱말 옆 &times;를 누르면 여기로 옵니다. 칩을 누르면 되돌립니다.</p>
           <div id="custom-chips" class="chip-row"></div>
           <label class="field">
             <span>직접 적어 넣기 (쉼표나 띄어쓰기로 구분)</span>
             <textarea id="custom-input" rows="2" placeholder="예: 기자, 사진, 뉴스"></textarea>
           </label>
         </div>
-      </section>
 
-      <div class="run-row">
-        <button id="analyze" class="button primary large" type="button">계산하기</button>
-      </div>
-
-      <section id="status" class="status" aria-live="polite"></section>
-
-      <!-- 5. 결과 -->
-      <section id="results" class="results hidden">
-        <section class="panel" aria-labelledby="tally-heading">
-          <div class="panel-head">
-            <h2 id="tally-heading">세어 본 결과</h2>
-            <p>분수의 분모로 쓰이는 숫자입니다. 직접 세지 않아도 됩니다.</p>
-          </div>
-          <div id="tally" class="tally"></div>
-        </section>
-
-        <section class="panel" aria-labelledby="keyword-heading">
-          <div class="panel-head">
-            <h2 id="keyword-heading">글마다의 핵심어</h2>
-            <p>TF-IDF 점수가 높은 순서입니다.</p>
-          </div>
-          <div id="summaries" class="card-grid"></div>
-        </section>
-
-        <section class="panel" aria-labelledby="removed-heading">
-          <div class="panel-head">
-            <h2 id="removed-heading">빠진 낱말</h2>
-            <p>무엇이 왜 빠졌는지 확인해 보세요.</p>
-          </div>
-          <div id="removed" class="removed"></div>
-        </section>
-
-        <section class="panel" aria-labelledby="dfidf-heading">
+        <div class="panel">
           <div class="panel-head">
             <div>
-              <h2 id="dfidf-heading">DF · IDF 표</h2>
+              <h2>세어 본 결과</h2>
+              <p>아래 분수의 분모로 쓰이는 숫자입니다. 직접 세지 않아도 검산할 수 있습니다.</p>
+            </div>
+          </div>
+          <div id="tally" class="tally"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>글마다의 핵심어</h2>
+              <p>TF-IDF 점수가 높은 순서입니다. 「원문에서 확인하기」를 누르면 어디에 있는 말인지 보입니다.</p>
+            </div>
+          </div>
+          <div id="summaries" class="card-grid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>DF · IDF 표</h2>
               <p id="idf-caption"></p>
             </div>
             <button id="download-dfidf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
+          <p class="hint">
+            DF가 클수록 IDF가 작아집니다. <strong>DF가 글 수와 같아지면 IDF가 0</strong>이 되어
+            그 낱말은 아무리 많이 나와도 점수가 0입니다. (상용로그형일 때)
+          </p>
           <div id="dfidf-table" class="table-wrap"></div>
-        </section>
+        </div>
 
-        <section class="panel" aria-labelledby="tf-heading">
+        <div class="panel">
           <div class="panel-head">
             <div>
-              <h2 id="tf-heading">TF 표</h2>
-              <p>칸마다 <code>글에 나온 횟수 / 그 글의 낱말 수</code>를 함께 보여 줍니다.</p>
+              <h2>TF 표</h2>
+              <p>칸마다 <code>나온 횟수 / 그 글의 낱말 수 = 값</code>을 함께 적었습니다.</p>
             </div>
             <button id="download-tf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
           <div id="tf-table" class="table-wrap"></div>
-        </section>
+        </div>
 
-        <section class="panel" aria-labelledby="tfidf-heading">
+        <div class="panel">
           <div class="panel-head">
             <div>
-              <h2 id="tfidf-heading">TF-IDF 표</h2>
-              <p>숫자가 클수록 그 글에서 더 특징적인 낱말입니다.</p>
+              <h2>TF-IDF 표</h2>
+              <p>칸마다 <code>TF × IDF</code>의 재료를 함께 적었습니다. 숫자가 클수록 그 글에서 특징적인 낱말입니다.</p>
             </div>
             <button id="download-tfidf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
           <div id="tfidf-table" class="table-wrap"></div>
-        </section>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>빠진 낱말</h2>
+              <p>무엇이 왜 빠졌는지 확인해 보세요. 내가 뺀 것과 도구가 뺀 것을 나눠 두었습니다.</p>
+            </div>
+          </div>
+          <div id="removed" class="removed"></div>
+        </div>
+
+        <div class="step-nav">
+          <button class="button" type="button" data-goto="3">← 계산 방법 바꾸기</button>
+          <button class="button" type="button" data-goto="1">다른 글로 다시 하기</button>
+        </div>
       </section>
 
       <footer class="page-footer">

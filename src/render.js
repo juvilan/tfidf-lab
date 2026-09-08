@@ -178,6 +178,33 @@
       .join("");
   }
 
+  // 2단계. 담은 글을 펼쳐 놓고 읽는 화면.
+  function renderReading(container, documents) {
+    if (documents.length === 0) {
+      container.innerHTML =
+        '<p class="basket-empty">담은 글이 없습니다. 1단계로 돌아가 골라 주세요.</p>';
+      return;
+    }
+
+    container.innerHTML = documents
+      .map(
+        (document, index) => `
+        <article class="read-card">
+          <div class="read-head">
+            <span class="read-num">${index + 1}</span>
+            <h3>${escapeHtml(document.title)}</h3>
+            ${
+              document.fictional
+                ? '<span class="tag fictional">가상 기사</span>'
+                : '<span class="tag mine">내 글</span>'
+            }
+          </div>
+          <div class="article-body">${renderArticleBody(document.text)}</div>
+        </article>`,
+      )
+      .join("");
+  }
+
   // ---------- 불용어 ----------
 
   function renderPresets(container, presets, activeIds) {
@@ -408,6 +435,7 @@
     renderDfIdfTable,
     renderMatrix,
     renderPresets,
+    renderReading,
     renderRemoved,
     renderSections,
     renderSummaries,
