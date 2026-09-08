@@ -40,6 +40,40 @@
     return entry;
   }
 
+  const themes = [];
+  const themeById = new Map();
+
+  // 섹션을 가로지르는 묶음. 글 자체는 섹션 파일이 이미 등록했고
+  // 여기서는 어느 글을 함께 볼지만 정한다.
+  function registerThemes(definitions) {
+    for (const definition of definitions) {
+      const articles = definition.articleIds
+        .map((id) => articleById.get(id))
+        .filter(Boolean);
+
+      const entry = {
+        id: definition.id,
+        label: definition.label,
+        description: definition.description || "",
+        articles,
+        missing: definition.articleIds.filter((id) => !articleById.has(id)),
+      };
+
+      themes.push(entry);
+      themeById.set(entry.id, entry);
+    }
+
+    return themes;
+  }
+
+  function listThemes() {
+    return themes;
+  }
+
+  function getTheme(themeId) {
+    return themeById.get(themeId) || null;
+  }
+
   function listSections() {
     return sections;
   }
@@ -60,7 +94,10 @@
     allArticles,
     getArticle,
     getSection,
+    getTheme,
     listSections,
+    listThemes,
     register,
+    registerThemes,
   };
 })(typeof window !== "undefined" ? window : globalThis);

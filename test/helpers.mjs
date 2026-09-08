@@ -20,6 +20,8 @@ const SECTION_FILES = [
   "../corpus/humanities.js",
   "../corpus/sports.js",
   "../corpus/entertainment.js",
+  // 테마는 모든 섹션이 등록된 뒤에 묶는다.
+  "../corpus/themes.js",
 ];
 
 const FILES = [...SOURCE_FILES, ...SECTION_FILES];

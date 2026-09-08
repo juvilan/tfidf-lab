@@ -7,9 +7,9 @@ const sectionId = process.argv[2] || "economy";
 const presetFlag = process.argv.indexOf("--preset");
 const extraPresets = presetFlag > -1 ? process.argv.slice(presetFlag + 1) : [];
 
-const section = lab.corpus.getSection(sectionId);
+const section = lab.corpus.getSection(sectionId) || lab.corpus.getTheme(sectionId);
 if (!section) {
-  console.error(`섹션을 찾을 수 없다: ${sectionId}`);
+  console.error(`섹션이나 테마를 찾을 수 없다: ${sectionId}`);
   process.exit(1);
 }
 
