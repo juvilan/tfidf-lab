@@ -1,0 +1,318 @@
+// 화면에 그리는 일만 맡는다. 상태를 바꾸지 않고, 무엇을 눌렀는지만
+// 콜백으로 알린다. 계산 결과를 어떻게 보여 줄지가 이 파일에 모여 있다.
+(function attachRender(global) {
+  const namespace = global.TfidfLab || (global.TfidfLab = {});
+  const { formatDecimal, formatFraction } = namespace.tfidf;
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ---------- 글 고르기 ----------
+
+  function renderSections(container, sections, pickedIds) {
+    container.innerHTML = sections
+      .map(
+        (section) => `
+        <article class="pick-card">
+          <h3>${escapeHtml(section.label)}</h3>
+          <p class="desc">${escapeHtml(section.description)}</p>
+          <button class="button tiny" type="button" data-add-section="${section.id}">
+            다섯 편 모두 담기
+          </button>
+          <ul>
+            ${section.articles
+              .map(
+                (article) => `
+                <li>
+                  <label>
+                    <input type="checkbox" data-toggle-article="${article.id}"
+                      ${pickedIds.has(article.id) ? "checked" : ""} />
+                    <span>${escapeHtml(article.title)}</span>
+                  </label>
+                </li>`,
+              )
+              .join("")}
+          </ul>
+        </article>`,
+      )
+      .join("");
+  }
+
+  function renderThemes(container, themes, pickedIds) {
+    container.innerHTML = themes
+      .map(
+        (theme) => `
+        <article class="pick-card">
+          <h3>${escapeHtml(theme.label)}</h3>
+          <p class="desc">${escapeHtml(theme.description)}</p>
+          <button class="button tiny" type="button" data-add-theme="${theme.id}">
+            다섯 편 모두 담기
+          </button>
+          <ul>
+            ${theme.articles
+              .map(
+                (article) => `
+                <li>
+                  <label>
+                    <input type="checkbox" data-toggle-article="${article.id}"
+                      ${pickedIds.has(article.id) ? "checked" : ""} />
+                    <span><span class="from">${escapeHtml(article.sectionLabel)}</span>
+                      ${escapeHtml(article.title)}</span>
+                  </label>
+                </li>`,
+              )
+              .join("")}
+          </ul>
+        </article>`,
+      )
+      .join("");
+  }
+
+  function renderBasket(container, documents) {
+    if (documents.length === 0) {
+      container.innerHTML =
+        '<p class="basket-empty">아직 담은 글이 없습니다. 위에서 골라 주세요.</p>';
+      return;
+    }
+
+    container.innerHTML = documents
+      .map(
+        (document) => `
+        <div class="basket-item">
+          <span class="tag ${document.fictional ? "section" : "mine"}">${escapeHtml(
+            document.sectionLabel || "내 글",
+          )}</span>
+          <span class="title">${escapeHtml(document.title)}</span>
+          ${document.fictional ? '<span class="tag fictional">가상 기사</span>' : ""}
+          <button class="button tiny" type="button" data-remove-doc="${document.id}">빼기</button>
+        </div>`,
+      )
+      .join("");
+  }
+
+  // ---------- 불용어 ----------
+
+  function renderPresets(container, presets, activeIds) {
+    container.innerHTML = presets
+      .map(
+        (preset) => `
+        <details class="preset">
+          <summary>
+            <span class="preset-row">
+              <input type="checkbox" data-toggle-preset="${preset.id}"
+                ${activeIds.has(preset.id) ? "checked" : ""} />
+              <span class="name">${escapeHtml(preset.label)}</span>
+              <span class="desc">${escapeHtml(preset.description)}</span>
+              <span class="count-badge">${preset.words.length}</span>
+            </span>
+          </summary>
+          <p class="preset-words">${preset.words.map(escapeHtml).join(", ")}</p>
+        </details>`,
+      )
+      .join("");
+  }
+
+  function renderCustomChips(container, words) {
+    container.innerHTML = words
+      .map(
+        (word) =>
+          `<button class="chip" type="button" data-restore="${escapeHtml(word)}">${escapeHtml(
+            word,
+          )}</button>`,
+      )
+      .join("");
+  }
+
+  // ---------- 결과 ----------
+
+  // 학생이 손으로 세지 않아도 되게, 분수에 쓰이는 숫자를 먼저 보여 준다.
+  function renderTally(container, analysis) {
+    const cards = [
+      {
+        label: "글 수 (N)",
+        value: `${analysis.documentCount}<small> 편</small>`,
+      },
+      ...analysis.documents.map((document) => ({
+        label: `${document.title} — 낱말 수`,
+        value: `${document.totalTerms}<small> 개 (서로 다른 낱말 ${document.uniqueTerms})</small>`,
+      })),
+    ];
+
+    container.innerHTML = cards
+      .map(
+        (card) => `
+        <div class="tally-card">
+          <span class="label">${escapeHtml(card.label)}</span>
+          <span class="value">${card.value}</span>
+        </div>`,
+      )
+      .join("");
+  }
+
+  function renderSummaries(container, analysis) {
+    container.innerHTML = analysis.summaries
+      .map(
+        (document) => `
+        <article class="summary-card">
+          <h3>${escapeHtml(document.title)}</h3>
+          <p class="meta">
+            낱말 ${document.totalTerms}개
+            ${document.fictional ? '· <span class="tag fictional">가상 기사</span>' : ""}
+          </p>
+          ${
+            document.topKeywords.length === 0
+              ? '<p class="meta">남은 낱말이 없어 핵심어를 뽑지 못했습니다.</p>'
+              : document.topKeywords
+                  .map(
+                    (keyword, index) => `
+                    <div class="keyword-line">
+                      <span class="rank">${index + 1}</span>
+                      <span class="term">${escapeHtml(keyword.term)}</span>
+                      <span class="calc">${keyword.count}/${keyword.totalTerms} × ${formatDecimal(
+                        keyword.idf,
+                      )}</span>
+                      <span class="score">${formatDecimal(keyword.score)}</span>
+                    </div>`,
+                  )
+                  .join("")
+          }
+        </article>`,
+      )
+      .join("");
+  }
+
+  const REMOVED_LABELS = {
+    stopword: "내가 뺀 낱말과 묶음",
+    verb: "서술어로 판단",
+    tooShort: "너무 짧음",
+    numeric: "숫자만 있음",
+  };
+
+  function renderRemoved(container, analysis) {
+    const groups = Object.entries(REMOVED_LABELS)
+      .map(([key, label]) => {
+        const bucket = analysis.removed[key];
+        const entries = [...bucket.entries()].sort((a, b) => b[1] - a[1]);
+        return { key, label, entries };
+      })
+      .filter((group) => group.entries.length > 0);
+
+    if (groups.length === 0) {
+      container.innerHTML = '<p class="hint">빠진 낱말이 없습니다.</p>';
+      return;
+    }
+
+    container.innerHTML = groups
+      .map(
+        (group) => `
+        <details class="removed-group">
+          <summary>${escapeHtml(group.label)} — ${group.entries.length}종
+            (모두 ${group.entries.reduce((sum, entry) => sum + entry[1], 0)}번)</summary>
+          <p class="removed-words">
+            ${group.entries
+              .map(([word, count]) =>
+                group.key === "stopword"
+                  ? `<button class="back" type="button" data-restore="${escapeHtml(
+                      word,
+                    )}">${escapeHtml(word)}</button>(${count})`
+                  : `${escapeHtml(word)}(${count})`,
+              )
+              .join(", ")}
+          </p>
+        </details>`,
+      )
+      .join("");
+  }
+
+  function termCell(term) {
+    return `<div class="term-cell">
+      <button class="drop" type="button" data-drop="${escapeHtml(term)}"
+        title="${escapeHtml(term)} 빼기" aria-label="${escapeHtml(term)} 빼기">&times;</button>
+      <span class="word">${escapeHtml(term)}</span>
+    </div>`;
+  }
+
+  function renderDfIdfTable(container, analysis, rows) {
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>낱말</th>
+            <th>모두 몇 번</th>
+            <th>DF (몇 편에)</th>
+            <th>IDF</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows
+            .map(
+              (row) => `
+              <tr>
+                <td>${termCell(row.term)}</td>
+                <td>${row.totalCount}</td>
+                <td>${row.df} / ${row.documentCount}</td>
+                <td>
+                  <span class="cell-main ${row.idf === 0 ? "zero" : ""}">${formatDecimal(
+                    row.idf,
+                  )}</span>
+                  <span class="cell-calc">${escapeHtml(row.idfExpression)}</span>
+                </td>
+              </tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>`;
+  }
+
+  function renderMatrix(container, analysis, rows, kind) {
+    const header = analysis.documents
+      .map((document) => `<th>${escapeHtml(document.title)}</th>`)
+      .join("");
+
+    container.innerHTML = `
+      <table>
+        <thead><tr><th>낱말</th>${header}</tr></thead>
+        <tbody>
+          ${rows
+            .map((row) => {
+              const cells = row.cells
+                .map((cell) => {
+                  const value = kind === "tf" ? cell.tf : cell.score;
+                  const detail =
+                    kind === "tf"
+                      ? formatFraction(cell.count, cell.totalTerms)
+                      : `${cell.count}/${cell.totalTerms} × ${formatDecimal(row.idf)}`;
+                  return `<td>
+                    <span class="cell-main ${value === 0 ? "zero" : ""}">${formatDecimal(
+                      value,
+                    )}</span>
+                    <span class="cell-calc">${escapeHtml(detail)}</span>
+                  </td>`;
+                })
+                .join("");
+              return `<tr><td>${termCell(row.term)}</td>${cells}</tr>`;
+            })
+            .join("")}
+        </tbody>
+      </table>`;
+  }
+
+  namespace.render = {
+    escapeHtml,
+    renderBasket,
+    renderCustomChips,
+    renderDfIdfTable,
+    renderMatrix,
+    renderPresets,
+    renderRemoved,
+    renderSections,
+    renderSummaries,
+    renderTally,
+    renderThemes,
+  };
+})(typeof window !== "undefined" ? window : globalThis);

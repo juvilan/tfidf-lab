@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tfidf-lab — 핵심어 찾기 실험실</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="page-header">
+        <p class="eyebrow">고등학교 인공지능수학 실습 도구</p>
+        <h1>핵심어 찾기 실험실</h1>
+        <p class="lede">
+          글을 여러 편 넣으면 <strong>TF</strong>, <strong>DF · IDF</strong>,
+          <strong>TF-IDF</strong>를 계산합니다. 세는 일과 계산은 도구가 맡고,
+          <strong>어떤 낱말을 뺄지는 여러분이 정합니다.</strong>
+        </p>
+      </header>
+
+      <!-- 1. 글 고르기 -->
+      <section class="panel" aria-labelledby="picker-heading">
+        <div class="panel-head">
+          <h2 id="picker-heading">글 고르기</h2>
+          <p>예시 글 35편은 모두 수업용으로 지어낸 글입니다. 실제 보도가 아닙니다.</p>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="글 고르는 방법">
+          <button class="tab is-active" role="tab" type="button" data-tab="sections" aria-selected="true">
+            섹션별
+          </button>
+          <button class="tab" role="tab" type="button" data-tab="themes" aria-selected="false">
+            테마별
+          </button>
+          <button class="tab" role="tab" type="button" data-tab="own" aria-selected="false">
+            직접 넣기
+          </button>
+        </div>
+
+        <div id="tab-sections" class="tab-body" role="tabpanel">
+          <div id="section-list" class="card-grid"></div>
+        </div>
+
+        <div id="tab-themes" class="tab-body hidden" role="tabpanel">
+          <p class="hint">
+            섹션이 달라도 같은 낱말이 나오도록 묶은 꾸러미입니다.
+            섹션별로 넣을 때와 결과가 어떻게 달라지는지 견주어 보세요.
+          </p>
+          <div id="theme-list" class="card-grid"></div>
+        </div>
+
+        <div id="tab-own" class="tab-body hidden" role="tabpanel">
+          <label class="field">
+            <span>제목</span>
+            <input id="own-title" type="text" placeholder="예: 내가 쓴 글" />
+          </label>
+          <label class="field">
+            <span>내용</span>
+            <textarea id="own-text" rows="6" placeholder="글을 붙여 넣으세요."></textarea>
+          </label>
+          <button id="own-add" class="button primary" type="button">이 글 담기</button>
+        </div>
+      </section>
+
+      <!-- 2. 담은 글 -->
+      <section class="panel" aria-labelledby="basket-heading">
+        <div class="panel-head">
+          <div>
+            <h2 id="basket-heading">담은 글 <span id="basket-count" class="count-badge">0</span></h2>
+            <p>TF-IDF는 글을 여러 편 견주어야 뜻이 생깁니다. 두 편 이상 담아 주세요.</p>
+          </div>
+          <button id="basket-clear" class="button ghost" type="button">모두 비우기</button>
+        </div>
+        <div id="basket-list" class="basket"></div>
+      </section>
+
+      <!-- 3. 설정 -->
+      <section class="panel" aria-labelledby="settings-heading">
+        <div class="panel-head">
+          <h2 id="settings-heading">계산 설정</h2>
+        </div>
+
+        <div class="settings-grid">
+          <fieldset class="choice-group">
+            <legend>IDF 계산 방식</legend>
+            <label class="choice">
+              <input id="idf-ratio" type="radio" name="idf-mode" value="ratio" checked />
+              <span><strong>비율형</strong><small>IDF = N / DF</small></span>
+            </label>
+            <label class="choice">
+              <input id="idf-log10" type="radio" name="idf-mode" value="log10" />
+              <span><strong>상용로그형</strong><small>IDF = log10(N / DF)</small></span>
+            </label>
+          </fieldset>
+
+          <div class="option-stack">
+            <label class="field inline">
+              <span>가장 짧은 낱말 길이</span>
+              <input id="min-length" type="number" min="1" max="6" value="2" />
+            </label>
+            <label class="field inline">
+              <span>표에 보여줄 낱말 수</span>
+              <input id="visible-terms" type="number" min="0" max="500" value="40" />
+            </label>
+            <label class="check">
+              <input id="exclude-numbers" type="checkbox" checked />
+              <span>숫자만 있는 낱말 빼기</span>
+            </label>
+            <label class="check">
+              <input id="exclude-verbs" type="checkbox" checked />
+              <span>서술어 빼기 <small>있습니다, 하겠습니다 같은 말</small></span>
+            </label>
+            <label class="check">
+              <input id="keep-original" type="checkbox" />
+              <span>원문 그대로 쓰기 <small>조사·어미를 손대지 않습니다</small></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 불용어 -->
+      <section class="panel" aria-labelledby="stopword-heading">
+        <div class="panel-head">
+          <h2 id="stopword-heading">뺄 낱말 고르기</h2>
+          <p>
+            무엇을 빼야 하는지는 글에 따라 다릅니다. 정답이 정해져 있지 않으니
+            결과를 보고 직접 골라 보세요.
+          </p>
+        </div>
+
+        <div id="preset-list" class="preset-list"></div>
+
+        <div class="stopword-mine">
+          <h3>내가 뺀 낱말 <span id="custom-count" class="count-badge">0</span></h3>
+          <p class="hint">아래 결과 표에서 낱말 옆 &times;를 누르면 여기로 옵니다. 칩을 누르면 되돌립니다.</p>
+          <div id="custom-chips" class="chip-row"></div>
+          <label class="field">
+            <span>직접 적어 넣기 (쉼표나 띄어쓰기로 구분)</span>
+            <textarea id="custom-input" rows="2" placeholder="예: 기자, 사진, 뉴스"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <div class="run-row">
+        <button id="analyze" class="button primary large" type="button">계산하기</button>
+      </div>
+
+      <section id="status" class="status" aria-live="polite"></section>
+
+      <!-- 5. 결과 -->
+      <section id="results" class="results hidden">
+        <section class="panel" aria-labelledby="tally-heading">
+          <div class="panel-head">
+            <h2 id="tally-heading">세어 본 결과</h2>
+            <p>분수의 분모로 쓰이는 숫자입니다. 직접 세지 않아도 됩니다.</p>
+          </div>
+          <div id="tally" class="tally"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="keyword-heading">
+          <div class="panel-head">
+            <h2 id="keyword-heading">글마다의 핵심어</h2>
+            <p>TF-IDF 점수가 높은 순서입니다.</p>
+          </div>
+          <div id="summaries" class="card-grid"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="removed-heading">
+          <div class="panel-head">
+            <h2 id="removed-heading">빠진 낱말</h2>
+            <p>무엇이 왜 빠졌는지 확인해 보세요.</p>
+          </div>
+          <div id="removed" class="removed"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="dfidf-heading">
+          <div class="panel-head">
+            <div>
+              <h2 id="dfidf-heading">DF · IDF 표</h2>
+              <p id="idf-caption"></p>
+            </div>
+            <button id="download-dfidf" class="button ghost" type="button">CSV 내려받기</button>
+          </div>
+          <div id="dfidf-table" class="table-wrap"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="tf-heading">
+          <div class="panel-head">
+            <div>
+              <h2 id="tf-heading">TF 표</h2>
+              <p>칸마다 <code>글에 나온 횟수 / 그 글의 낱말 수</code>를 함께 보여 줍니다.</p>
+            </div>
+            <button id="download-tf" class="button ghost" type="button">CSV 내려받기</button>
+          </div>
+          <div id="tf-table" class="table-wrap"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="tfidf-heading">
+          <div class="panel-head">
+            <div>
+              <h2 id="tfidf-heading">TF-IDF 표</h2>
+              <p>숫자가 클수록 그 글에서 더 특징적인 낱말입니다.</p>
+            </div>
+            <button id="download-tfidf" class="button ghost" type="button">CSV 내려받기</button>
+          </div>
+          <div id="tfidf-table" class="table-wrap"></div>
+        </section>
+      </section>
+
+      <footer class="page-footer">
+        <p>예시 글 35편은 수업용으로 지어낸 글입니다. 실제 보도가 아니며 실존하는 인물·기업·기관·통계를 담고 있지 않습니다.</p>
+        <p>MIT License · 외부 라이브러리 없이 동작합니다.</p>
+      </footer>
+    </main>
+
+    <script defer src="./src/tokenizer.js"></script>
+    <script defer src="./src/stopwords.js"></script>
+    <script defer src="./src/tfidf.js"></script>
+    <script defer src="./corpus/index.js"></script>
+    <script defer src="./corpus/economy.js"></script>
+    <script defer src="./corpus/politics.js"></script>
+    <script defer src="./corpus/society.js"></script>
+    <script defer src="./corpus/scitech.js"></script>
+    <script defer src="./corpus/humanities.js"></script>
+    <script defer src="./corpus/sports.js"></script>
+    <script defer src="./corpus/entertainment.js"></script>
+    <script defer src="./corpus/themes.js"></script>
+    <script defer src="./src/render.js"></script>
+    <script defer src="./src/app.js"></script>
+  </body>
+</html>
