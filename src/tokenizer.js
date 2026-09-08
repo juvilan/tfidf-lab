@@ -228,6 +228,7 @@
   //   excludeVerbs     서술어 제외 (기본 true)
   //   keepOriginal     조사·어미를 떼지 않고 입력 그대로 사용 (기본 false)
   //   stopwords        Set<string>
+  //   keepWords        Set<string> — 어떤 이유로도 빼지 않을 낱말
   //   lexicon          buildLexicon 결과
   function tokenize(text, options) {
     const settings = options || {};
@@ -240,6 +241,9 @@
     // 다시 손대지 않는 것이 이 모드의 목적이다.
     const excludeVerbs = !keepOriginal && settings.excludeVerbs !== false;
     const stopwords = settings.stopwords || new Set();
+    // 사용자가 되살린 낱말은 서술어든 한 글자든 그대로 통과시킨다.
+    // 도구가 뺀 것을 사람이 되돌릴 수 있어야 판단이 사람 손에 남는다.
+    const keepWords = settings.keepWords || new Set();
     const lexicon = keepOriginal ? null : settings.lexicon || null;
 
     const tokens = [];
@@ -256,28 +260,32 @@
     }
 
     for (const word of splitWords(text)) {
-      if (excludeVerbs && isVerbForm(word)) {
+      const keptAsWord = keepWords.has(word);
+
+      if (!keptAsWord && excludeVerbs && isVerbForm(word)) {
         note(removed.verb, word);
         continue;
       }
 
-      const token = keepOriginal ? word : stripParticles(word, lexicon);
+      const token = keptAsWord || keepOriginal ? word : stripParticles(word, lexicon);
 
       if (!token) {
         continue;
       }
 
-      if (excludeNumbers && NUMBER_ONLY_PATTERN.test(token)) {
+      const kept = keptAsWord || keepWords.has(token);
+
+      if (!kept && excludeNumbers && NUMBER_ONLY_PATTERN.test(token)) {
         note(removed.numeric, token);
         continue;
       }
 
-      if (token.length < minTokenLength) {
+      if (!kept && token.length < minTokenLength) {
         note(removed.tooShort, token);
         continue;
       }
 
-      if (stopwords.has(token)) {
+      if (!kept && stopwords.has(token)) {
         note(removed.stopword, token);
         continue;
       }

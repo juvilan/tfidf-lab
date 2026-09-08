@@ -109,3 +109,33 @@ test("formatFraction이 분수와 값을 함께 보여준다", () => {
   assert.equal(formatFraction(3, 142), "3 / 142 = 0.0211");
   assert.equal(formatFraction(1, 0), "0");
 });
+
+test("묶음을 켠 채로 낱말 하나만 되살릴 수 있다", () => {
+  // 90개짜리 묶음에서 하나를 살리자고 나머지 89개를 함께 되살릴 수는 없다.
+  const presetIds = ["newsPredicates"];
+  const docs = [
+    { id: "a", title: "가", text: "물가 있다 올랐다 수출" },
+    { id: "b", title: "나", text: "물가 있다 올랐다 내수" },
+  ];
+
+  const all = lab.stopwords.buildStopwordSet(presetIds, [], new Set());
+  assert.ok(all.words.has("있다") && all.words.has("올랐다"));
+
+  const partial = lab.stopwords.buildStopwordSet(presetIds, [], new Set(["있다"]));
+  assert.equal(partial.words.has("있다"), false, "되살린 낱말은 빠져야 한다");
+  assert.ok(partial.words.has("올랐다"), "나머지 묶음은 그대로 남아야 한다");
+
+  const analysis = analyze(docs, {
+    minTokenLength: 2,
+    stopwords: partial.words,
+    keepWords: new Set(["있다"]),
+  });
+  assert.ok(analysis.rowByTerm.has("있다"));
+  assert.equal(analysis.rowByTerm.has("올랐다"), false);
+});
+
+test("어느 묶음에 든 낱말인지 알려 준다", () => {
+  assert.equal(lab.stopwords.presetLabelOf("밝혔다", ["newsPredicates"]), "뉴스체 서술어");
+  assert.equal(lab.stopwords.presetLabelOf("밝혔다", ["general"]), null);
+  assert.equal(lab.stopwords.presetLabelOf("없는낱말", ["general"]), null);
+});

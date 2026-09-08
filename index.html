@@ -37,6 +37,12 @@
         </button>
       </nav>
 
+      <div class="view-row">
+        <button id="clean-toggle" class="button ghost" type="button" aria-pressed="false">
+          결과만 보기
+        </button>
+      </div>
+
       <section id="status" class="status" aria-live="polite"></section>
 
       <!-- ============ 1단계 ============ -->
@@ -190,50 +196,27 @@
         </div>
 
         <div class="panel">
-          <div class="panel-head"><h2>낱말을 세는 기준</h2></div>
-          <div class="settings-grid">
-            <div class="option-stack">
-              <label class="field inline">
-                <span>가장 짧은 낱말 길이</span>
-                <input id="min-length" type="number" min="1" max="6" value="2" />
-              </label>
-              <p class="hint">
-                2로 두면 한 글자 낱말을 셈에서 뺍니다. 1로 낮추면 「수」, 「것」 같은 말도 셉니다.
-              </p>
-              <label class="field inline">
-                <span>표에 보여줄 낱말 수</span>
-                <input id="visible-terms" type="number" min="0" max="500" value="40" />
-              </label>
-              <p class="hint">계산은 모든 낱말로 하고, 표에만 상위 몇 개를 보여 줍니다. 0을 넣으면 전부 봅니다.</p>
-            </div>
+          <div class="panel-head"><h2>표 보기</h2></div>
+          <label class="field inline">
+            <span>표에 보여줄 낱말 수</span>
+            <input id="visible-terms" type="number" min="0" max="500" value="40" />
+          </label>
+          <p class="hint">
+            계산은 모든 낱말로 하고 표에만 상위 몇 개를 보여 줍니다. 0을 넣으면 전부 봅니다.
+          </p>
+        </div>
 
-            <div class="option-stack">
-              <label class="check">
-                <input id="exclude-numbers" type="checkbox" checked />
-                <span>숫자만 있는 낱말 빼기 <small>0.3, 2026 같은 것</small></span>
-              </label>
-              <label class="check">
-                <input id="exclude-verbs" type="checkbox" checked />
-                <span>
-                  서술어 빼기
-                  <small>
-                    「있습니다」, 「하겠습니다」처럼 문장을 맺는 말입니다.
-                    명사처럼 세어지면 핵심어 자리를 빼앗습니다.
-                  </small>
-                </span>
-              </label>
-              <label class="check">
-                <input id="keep-original" type="checkbox" />
-                <span>
-                  원문 그대로 쓰기
-                  <small>
-                    조사와 어미를 손대지 않습니다. 「국민이」와 「국민을」이
-                    서로 다른 낱말로 세어집니다. AI로 명사만 뽑아 정리한 글을 넣을 때 켜세요.
-                  </small>
-                </span>
-              </label>
-            </div>
-          </div>
+        <div class="panel">
+          <div class="panel-head"><h2>자동으로 빼는 낱말</h2></div>
+          <p class="hint">
+            아래 세 가지는 도구가 알아서 뺍니다. 미리 정할 필요가 없습니다.
+            <strong>다음 단계의 「빠진 낱말」에서 낱말을 누르면 언제든 되살릴 수 있습니다.</strong>
+          </p>
+          <ul class="plain-list">
+            <li><strong>서술어</strong> — 「있습니다」, 「하겠습니다」처럼 문장을 맺는 말</li>
+            <li><strong>한 글자 낱말</strong> — 「수」, 「것」처럼 혼자서는 뜻이 흐린 말</li>
+            <li><strong>숫자만 있는 낱말</strong> — 0.3, 2026 같은 것</li>
+          </ul>
         </div>
 
         <div class="step-nav">
@@ -248,8 +231,9 @@
           <h2>4단계 · 결과를 보고 걸러 냅니다</h2>
           <p>
             결과 표에서 낱말 옆 <strong>&times;</strong>를 누르면 그 낱말이 빠지고
-            바로 다시 계산됩니다. 핵심어 같지 않은 말이 위에 있으면 눌러서 빼 보세요.
-            <strong>빼고 → 다시 보고 → 또 빼는 것이 이 단계의 전부입니다.</strong>
+            바로 다시 계산됩니다. 반대로 <strong>「빠진 낱말」에서 낱말을 누르면 되살아납니다.</strong>
+            묶음으로 뺀 것이든 도구가 뺀 것이든 낱말 하나씩 되돌릴 수 있습니다.
+            <strong>빼고 → 다시 보고 → 되살리는 것이 이 단계의 전부입니다.</strong>
           </p>
           <p class="tip">
             <strong>견주어 볼 것</strong> — 2단계에서 각자 적어 둔 핵심어와 견주어 보세요.
@@ -281,7 +265,7 @@
           </div>
         </details>
 
-        <div class="panel">
+        <div class="panel controls">
           <div class="panel-head">
             <div>
               <h2>뺄 낱말 고르기</h2>
@@ -298,10 +282,26 @@
           <h3 class="sub">내가 뺀 낱말 <span id="custom-count" class="count-badge">0</span></h3>
           <p class="hint">아래 표에서 낱말 옆 &times;를 누르면 여기로 옵니다. 칩을 누르면 되돌립니다.</p>
           <div id="custom-chips" class="chip-row"></div>
+
+          <h3 class="sub">되살린 낱말 <span id="keep-count" class="count-badge">0</span></h3>
+          <p class="hint">
+            묶음이나 도구가 뺐지만 다시 세기로 한 낱말입니다. 칩을 누르면 도로 뺍니다.
+          </p>
+          <div id="keep-chips" class="chip-row"></div>
           <label class="field">
             <span>직접 적어 넣기 (쉼표나 띄어쓰기로 구분)</span>
             <textarea id="custom-input" rows="2" placeholder="예: 기자, 사진, 뉴스"></textarea>
           </label>
+        </div>
+
+        <div class="panel controls">
+          <div class="panel-head">
+            <div>
+              <h2>빠진 낱말</h2>
+              <p>무엇이 왜 빠졌는지 확인해 보세요. <strong>낱말을 누르면 되살아납니다.</strong></p>
+            </div>
+          </div>
+          <div id="removed" class="removed"></div>
         </div>
 
         <div class="panel">
@@ -359,16 +359,6 @@
             <button id="download-tfidf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
           <div id="tfidf-table" class="table-wrap"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>빠진 낱말</h2>
-              <p>무엇이 왜 빠졌는지 확인해 보세요. 내가 뺀 것과 도구가 뺀 것을 나눠 두었습니다.</p>
-            </div>
-          </div>
-          <div id="removed" class="removed"></div>
         </div>
 
         <div class="step-nav">

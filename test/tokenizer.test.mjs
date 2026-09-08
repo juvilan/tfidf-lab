@@ -107,3 +107,22 @@ test("두 글자 명사는 길이 가드가 지켜 준다", () => {
   assert.ok(tokens.includes("회의"));
   assert.ok(tokens.includes("정의"));
 });
+
+test("되살린 낱말은 어떤 거름망도 지나간다", () => {
+  const text = "있습니다 물가 수 3 성장";
+  const lexicon = lab.tokenizer.buildLexicon([{ id: "d1", text }], {});
+
+  const plain = lab.tokenizer.tokenize(text, {
+    lexicon,
+    stopwords: new Set(["성장"]),
+  });
+  assert.deepEqual([...plain.tokens], ["물가"]);
+
+  // 서술어, 한 글자, 숫자, 불용어 — 뺀 이유가 무엇이든 되살아나야 한다.
+  const kept = lab.tokenizer.tokenize(text, {
+    lexicon,
+    stopwords: new Set(["성장"]),
+    keepWords: new Set(["있습니다", "수", "3", "성장"]),
+  });
+  assert.deepEqual([...kept.tokens], ["있습니다", "물가", "수", "3", "성장"]);
+});

@@ -207,10 +207,14 @@
 
   // ---------- 불용어 ----------
 
-  function renderPresets(container, presets, activeIds) {
+  function renderPresets(container, presets, activeIds, keepWords) {
+    const kept = keepWords || new Set();
+
     container.innerHTML = presets
-      .map(
-        (preset) => `
+      .map((preset) => {
+        const keptCount = preset.words.filter((word) => kept.has(word)).length;
+
+        return `
         <details class="preset">
           <summary>
             <span class="preset-row">
@@ -218,11 +222,40 @@
                 ${activeIds.has(preset.id) ? "checked" : ""} />
               <span class="name">${escapeHtml(preset.label)}</span>
               <span class="desc">${escapeHtml(preset.description)}</span>
+              ${keptCount > 0 ? `<span class="count-badge keep">${keptCount} 되살림</span>` : ""}
               <span class="count-badge">${preset.words.length}</span>
             </span>
           </summary>
-          <p class="preset-words">${preset.words.map(escapeHtml).join(", ")}</p>
-        </details>`,
+          <p class="preset-hint">낱말을 누르면 그 낱말만 되살립니다. 다시 누르면 도로 뺍니다.</p>
+          <div class="preset-words">
+            ${preset.words
+              .map(
+                (word) =>
+                  `<button class="word-toggle${
+                    kept.has(word) ? " is-kept" : ""
+                  }" type="button" data-toggle-word="${escapeHtml(word)}">${escapeHtml(
+                    word,
+                  )}</button>`,
+              )
+              .join("")}
+          </div>
+        </details>`;
+      })
+      .join("");
+  }
+
+  function renderKeepChips(container, words) {
+    if (words.length === 0) {
+      container.innerHTML = '<p class="hint">되살린 낱말이 아직 없습니다.</p>';
+      return;
+    }
+
+    container.innerHTML = words
+      .map(
+        (word) =>
+          `<button class="chip keep" type="button" data-unkeep="${escapeHtml(
+            word,
+          )}">${escapeHtml(word)}</button>`,
       )
       .join("");
   }
@@ -313,9 +346,9 @@
 
   const REMOVED_LABELS = {
     stopword: "내가 뺀 낱말과 묶음",
-    verb: "서술어로 판단",
-    tooShort: "너무 짧음",
-    numeric: "숫자만 있음",
+    verb: "서술어로 판단해 뺌",
+    tooShort: "한 글자라 뺌",
+    numeric: "숫자만 있어 뺌",
   };
 
   function renderRemoved(container, analysis) {
@@ -338,17 +371,17 @@
         <details class="removed-group">
           <summary>${escapeHtml(group.label)} — ${group.entries.length}종
             (모두 ${group.entries.reduce((sum, entry) => sum + entry[1], 0)}번)</summary>
-          <p class="removed-words">
+          <p class="removed-hint">낱말을 누르면 되살립니다.</p>
+          <div class="removed-words">
             ${group.entries
-              .map(([word, count]) =>
-                group.key === "stopword"
-                  ? `<button class="back" type="button" data-restore="${escapeHtml(
-                      word,
-                    )}">${escapeHtml(word)}</button>(${count})`
-                  : `${escapeHtml(word)}(${count})`,
+              .map(
+                ([word, count]) =>
+                  `<button class="word-toggle" type="button" data-restore="${escapeHtml(
+                    word,
+                  )}">${escapeHtml(word)} <span class="n">${count}</span></button>`,
               )
-              .join(", ")}
-          </p>
+              .join("")}
+          </div>
         </details>`,
       )
       .join("");
@@ -433,6 +466,7 @@
     renderBasket,
     renderCustomChips,
     renderDfIdfTable,
+    renderKeepChips,
     renderMatrix,
     renderPresets,
     renderReading,

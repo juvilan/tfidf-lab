@@ -67,7 +67,7 @@
   // 켜진 프리셋과 사용자가 직접 고른 단어를 하나의 Set으로 합친다.
   // 출처를 알아야 화면에서 "프리셋이 뺀 것"과 "내가 뺀 것"을 구분할 수 있으므로
   // sources 맵도 함께 돌려준다.
-  function buildStopwordSet(activePresetIds, customWords) {
+  function buildStopwordSet(activePresetIds, customWords, keepWords) {
     const words = new Set();
     const sources = new Map();
 
@@ -94,7 +94,24 @@
       sources.set(trimmed, "직접 추가");
     }
 
+    // 묶음을 켜 두고도 그중 몇 개는 살리고 싶을 때가 있다.
+    // 그러라고 묶음을 통째로 끄게 만들면 판단의 눈금이 너무 거칠어진다.
+    for (const word of keepWords || []) {
+      words.delete(word);
+    }
+
     return { words, sources };
+  }
+
+  // 그 낱말이 어느 묶음에 들어 있는지 (없으면 null)
+  function presetLabelOf(word, activePresetIds) {
+    for (const presetId of activePresetIds || []) {
+      const preset = PRESET_BY_ID.get(presetId);
+      if (preset && preset.words.includes(word)) {
+        return preset.label;
+      }
+    }
+    return null;
   }
 
   function parseCustomInput(text) {
@@ -112,6 +129,7 @@
     PRESETS,
     buildStopwordSet,
     defaultPresetIds,
+    presetLabelOf,
     parseCustomInput,
   };
 })(typeof window !== "undefined" ? window : globalThis);

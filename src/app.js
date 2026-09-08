@@ -17,14 +17,13 @@
     basketCount: el("#basket-count"),
     basketClear: el("#basket-clear"),
     idfFields: [...document.querySelectorAll('input[name="idf-mode"]')],
-    minLength: el("#min-length"),
     visibleTerms: el("#visible-terms"),
-    excludeNumbers: el("#exclude-numbers"),
-    excludeVerbs: el("#exclude-verbs"),
-    keepOriginal: el("#keep-original"),
     presetList: el("#preset-list"),
     customChips: el("#custom-chips"),
     customCount: el("#custom-count"),
+    keepChips: el("#keep-chips"),
+    keepCount: el("#keep-count"),
+    cleanToggle: el("#clean-toggle"),
     customInput: el("#custom-input"),
     analyze: el("#analyze"),
     status: el("#status"),
@@ -43,6 +42,7 @@
     documents: [],
     presetIds: new Set(stopwords.defaultPresetIds()),
     customWords: [],
+    keepWords: [],
     ownCounter: 0,
     analysis: null,
   };
@@ -58,6 +58,7 @@
         documents: state.documents,
         presetIds: [...state.presetIds],
         customWords: state.customWords,
+        keepWords: state.keepWords,
         settings: readSettings(),
       };
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -95,11 +96,7 @@
     const idfField = ui.idfFields.find((field) => field.checked);
     return {
       idfMode: idfField ? idfField.value : "ratio",
-      minTokenLength: Number(ui.minLength.value) || 2,
       visibleTerms: Number(ui.visibleTerms.value) || 0,
-      excludeNumbers: ui.excludeNumbers.checked,
-      excludeVerbs: ui.excludeVerbs.checked,
-      keepOriginal: ui.keepOriginal.checked,
     };
   }
 
@@ -107,14 +104,7 @@
     if (!settings) return;
     const idfField = ui.idfFields.find((field) => field.value === settings.idfMode);
     if (idfField) idfField.checked = true;
-    if (settings.minTokenLength) ui.minLength.value = settings.minTokenLength;
     if (settings.visibleTerms != null) ui.visibleTerms.value = settings.visibleTerms;
-    if (typeof settings.excludeNumbers === "boolean")
-      ui.excludeNumbers.checked = settings.excludeNumbers;
-    if (typeof settings.excludeVerbs === "boolean")
-      ui.excludeVerbs.checked = settings.excludeVerbs;
-    if (typeof settings.keepOriginal === "boolean")
-      ui.keepOriginal.checked = settings.keepOriginal;
   }
 
   // 단계는 한 번에 하나만 보인다. 한 화면에 다 펼쳐 놓으면
@@ -195,9 +185,12 @@
   }
 
   function refreshStopwordPanel() {
-    render.renderPresets(ui.presetList, stopwords.PRESETS, state.presetIds);
+    const kept = new Set(state.keepWords);
+    render.renderPresets(ui.presetList, stopwords.PRESETS, state.presetIds, kept);
     render.renderCustomChips(ui.customChips, state.customWords);
+    render.renderKeepChips(ui.keepChips, state.keepWords);
     ui.customCount.textContent = String(state.customWords.length);
+    ui.keepCount.textContent = String(state.keepWords.length);
   }
 
   // 결과를 보고 고른 낱말과 직접 적어 넣은 낱말을 합친다.
@@ -206,6 +199,7 @@
   }
 
   function dropTerm(term) {
+    state.keepWords = state.keepWords.filter((word) => word !== term);
     if (!state.customWords.includes(term)) {
       state.customWords.push(term);
     }
@@ -214,14 +208,40 @@
     analyze();
   }
 
+  // 되살리기는 뺀 이유가 무엇이든 똑같이 동작해야 한다.
+  //   내가 직접 뺀 것       -> 목록에서 지운다
+  //   묶음이나 도구가 뺀 것 -> 예외 목록에 넣어 거름망을 지나가게 한다
+  //
+  // 묶음을 통째로 껐다 켜는 것만으로는 눈금이 너무 거칠다. 90개짜리 묶음에서
+  // 하나를 살리자고 나머지 89개를 함께 되살릴 수는 없다.
   function restoreTerm(term) {
     state.customWords = state.customWords.filter((word) => word !== term);
     // 직접 적어 넣은 칸에도 있으면 함께 지운다. 그렇지 않으면 되돌려도 다시 빠진다.
     const typed = stopwords.parseCustomInput(ui.customInput.value).filter((word) => word !== term);
     ui.customInput.value = typed.join(", ");
+
+    if (!state.keepWords.includes(term)) {
+      state.keepWords.push(term);
+    }
+
     refreshStopwordPanel();
     saveState();
     analyze();
+  }
+
+  function unkeepTerm(term) {
+    state.keepWords = state.keepWords.filter((word) => word !== term);
+    refreshStopwordPanel();
+    saveState();
+    analyze();
+  }
+
+  function toggleKeep(term) {
+    if (state.keepWords.includes(term)) {
+      unkeepTerm(term);
+    } else {
+      restoreTerm(term);
+    }
   }
 
   // ---------- 계산 ----------
@@ -233,15 +253,17 @@
     }
 
     const settings = readSettings();
-    const { words } = stopwords.buildStopwordSet([...state.presetIds], allCustomWords());
+    const keepWords = new Set(state.keepWords);
+    const { words } = stopwords.buildStopwordSet(
+      [...state.presetIds],
+      allCustomWords(),
+      keepWords,
+    );
 
     const analysis = tfidf.analyze(state.documents, {
       idfMode: settings.idfMode,
-      minTokenLength: settings.minTokenLength,
-      excludeNumbers: settings.excludeNumbers,
-      excludeVerbs: settings.excludeVerbs,
-      keepOriginal: settings.keepOriginal,
       stopwords: words,
+      keepWords,
     });
 
     state.analysis = analysis;
@@ -268,10 +290,6 @@
 
     if (limit > 0 && analysis.rows.length > limit) {
       messages.push(`표에는 상위 ${limit}개만 보여 줍니다.`);
-    }
-
-    if (settings.keepOriginal) {
-      messages.push("원문 그대로 모드: 조사와 어미를 손대지 않았습니다.");
     }
 
     let tone = "good";
@@ -442,12 +460,21 @@
   ui.presetList.addEventListener("click", (event) => {
     if (event.target.matches("[data-toggle-preset]")) {
       event.stopPropagation();
+      return;
     }
+
+    const word = event.target.closest("[data-toggle-word]");
+    if (word) toggleKeep(word.dataset.toggleWord);
   });
 
   ui.customChips.addEventListener("click", (event) => {
     const chip = event.target.closest("[data-restore]");
     if (chip) restoreTerm(chip.dataset.restore);
+  });
+
+  ui.keepChips.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-unkeep]");
+    if (chip) unkeepTerm(chip.dataset.unkeep);
   });
 
   ui.removed.addEventListener("click", (event) => {
@@ -468,14 +495,7 @@
     });
   }
 
-  for (const field of [
-    ui.minLength,
-    ui.visibleTerms,
-    ui.excludeNumbers,
-    ui.excludeVerbs,
-    ui.keepOriginal,
-    ...ui.idfFields,
-  ]) {
+  for (const field of [ui.visibleTerms, ...ui.idfFields]) {
     field.addEventListener("change", () => {
       saveState();
       reanalyzeIfShown();
@@ -504,6 +524,15 @@
     });
   }
 
+  // 프로젝터에 띄울 때는 설정과 안내가 방해가 된다.
+  // 몸통에 표시만 남기고 CSS가 나머지를 감춘다.
+  ui.cleanToggle.addEventListener("click", () => {
+    const on = document.body.classList.toggle("clean-view");
+    ui.cleanToggle.textContent = on ? "설정 다시 보기" : "결과만 보기";
+    ui.cleanToggle.setAttribute("aria-pressed", String(on));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
   el("#download-dfidf").addEventListener("click", () => {
     if (state.analysis) download("df-idf.csv", dfIdfCsv(state.analysis));
   });
@@ -522,6 +551,7 @@
     state.documents = saved.documents;
     if (Array.isArray(saved.presetIds)) state.presetIds = new Set(saved.presetIds);
     if (Array.isArray(saved.customWords)) state.customWords = saved.customWords;
+    if (Array.isArray(saved.keepWords)) state.keepWords = saved.keepWords;
     applySettings(saved.settings);
     setStatus("지난번에 담아 둔 글을 불러왔습니다. 계산하기를 눌러 보세요.");
   }

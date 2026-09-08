@@ -1013,3 +1013,133 @@ code {
   background: var(--surface-soft);
   font-size: 0.92em;
 }
+
+/* ---------- 눌러서 되살리는 낱말 ---------- */
+.plain-list {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--ink-soft);
+}
+
+.plain-list li {
+  padding: 0.15rem 0;
+}
+
+.preset-hint,
+.removed-hint {
+  margin: 0 0.9rem 0.4rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.preset-words,
+.removed-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0 0.9rem 0.9rem;
+}
+
+.word-toggle {
+  padding: 0.18rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.word-toggle:hover {
+  border-color: var(--good);
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.word-toggle .n {
+  opacity: 0.6;
+  font-size: 0.8em;
+}
+
+/* 되살린 낱말은 한눈에 구분되어야 한다 */
+.word-toggle.is-kept {
+  border-color: var(--good);
+  background: var(--good-soft);
+  color: var(--good);
+  font-weight: 700;
+}
+
+.word-toggle.is-kept::before {
+  content: "↩ ";
+}
+
+.count-badge.keep {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.chip.keep::after {
+  content: " ×";
+}
+
+.view-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.8rem;
+}
+
+#clean-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------- 결과만 보기 ---------- */
+/* 프로젝터에 띄울 때 설명과 조작부를 감춘다. 남는 것은 숫자뿐이다. */
+body.clean-view .steps,
+body.clean-view .guide,
+body.clean-view .explain,
+body.clean-view .step-nav,
+body.clean-view .panel.controls,
+body.clean-view .page-header .eyebrow,
+body.clean-view .page-header .lede,
+body.clean-view .status,
+body.clean-view .drop,
+body.clean-view .peek,
+body.clean-view .panel-head p {
+  display: none !important;
+}
+
+body.clean-view .page-header {
+  padding: 1.4rem 0 0.8rem;
+}
+
+body.clean-view .shell {
+  max-width: 1320px;
+}
+
+body.clean-view .card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+body.clean-view .summary-card h3 {
+  font-size: 1.2rem;
+}
+
+body.clean-view .keyword-line {
+  font-size: 1.02rem;
+  padding: 0.4rem 0;
+}
+
+body.clean-view .keyword-line .calc {
+  font-size: 0.9rem;
+}
+
+body.clean-view table {
+  font-size: 1rem;
+}
+
+body.clean-view .tally-card .value {
+  font-size: 1.7rem;
+}
