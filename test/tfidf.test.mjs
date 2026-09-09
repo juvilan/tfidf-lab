@@ -160,3 +160,33 @@ test("어느 묶음에 든 낱말인지 알려 준다", () => {
   assert.equal(lab.stopwords.presetLabelOf("밝혔다", ["general"]), null);
   assert.equal(lab.stopwords.presetLabelOf("없는낱말", ["general"]), null);
 });
+
+test("주제어는 가장 많이 나온 단어이고 유용한 정보와 갈릴 수 있다", () => {
+  // 교과서가 가르는 두 이름이다. 빈도수 1위가 주제어, TF-IDF 1위가 유용한 정보.
+  // 이 둘이 어긋나는 장면이 수업의 알맹이라 도구가 둘 다 내놓아야 한다.
+  const analysis = analyze(DOCS, { idfMode: "log10", minTokenLength: 2 });
+  const docA = analysis.summaries.find((document) => document.id === "a");
+
+  // 가 문서: 물가 2회, 성장 1회, 수출 1회 → 주제어는 물가
+  assert.equal(docA.topicWord.term, "물가");
+  assert.equal(docA.topicWord.count, 2);
+
+  // 그런데 물가는 두 문서 모두에 있어 IDF가 0이다. 유용한 정보는 될 수 없다.
+  assert.equal(analysis.rowByTerm.get("물가").idf, 0);
+  assert.notEqual(
+    docA.topKeywords[0].term,
+    docA.topicWord.term,
+    "주제어와 TF-IDF 1위가 갈리는 장면이 살아 있어야 한다",
+  );
+  assert.ok(docA.topKeywords[0].score > 0);
+});
+
+test("남은 단어가 없으면 주제어도 없다", () => {
+  const analysis = analyze([{ id: "a", title: "가", text: "물가" }], {
+    idfMode: "ratio",
+    minTokenLength: 2,
+    stopwords: new Set(["물가"]),
+  });
+
+  assert.equal(analysis.summaries[0].topicWord, null);
+});

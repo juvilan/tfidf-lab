@@ -308,8 +308,16 @@
             ${document.fictional ? '· <span class="tag fictional">가상 기사</span>' : ""}
           </p>
           ${
+            document.topicWord
+              ? `<p class="topic-word">
+                   주제어 <b>${escapeHtml(document.topicWord.term)}</b>
+                   <small>${document.topicWord.count}회 — 가장 많이 나온 단어</small>
+                 </p>`
+              : ""
+          }
+          ${
             document.topKeywords.length === 0
-              ? '<p class="meta">남은 단어가 없어 핵심어를 뽑지 못했습니다.</p>'
+              ? '<p class="meta">남은 단어가 없어 유용한 정보를 뽑지 못했습니다.</p>'
               : document.topKeywords
                   .map(
                     (keyword, index) => `

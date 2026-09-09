@@ -1180,3 +1180,40 @@ body.clean-view .tally-card .value {
   position: static;
   background: none;
 }
+
+/* 주제어 — 빈도수가 가장 높은 단어. TF-IDF 상위(유용한 정보)와 견주라고 맨 위에 둔다. */
+.summary-card .topic-word {
+  margin: 0 0 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px dashed var(--line);
+  font-size: 0.9rem;
+}
+
+.summary-card .topic-word b {
+  font-size: 1rem;
+}
+
+.summary-card .topic-word small {
+  color: var(--ink-soft);
+  margin-left: 0.3rem;
+}
+
+/* 2단계에서 무엇을 적어 둘지 두 갈래로 보여 주는 목록 */
+.guide-list {
+  margin: 0 0 0.8rem;
+  padding-left: 1.2rem;
+  line-height: 1.7;
+}
+
+/* 교과서가 적어 둔 전처리 차례 */
+.pipeline {
+  margin: 0.4rem 0 0.9rem;
+  padding-left: 1.3rem;
+  line-height: 1.75;
+}
+
+.mini-table sup {
+  font-size: 0.72em;
+}

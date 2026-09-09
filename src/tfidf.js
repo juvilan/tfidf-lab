@@ -161,7 +161,20 @@
         })
         .slice(0, 8);
 
-      return { ...document, topKeywords };
+      // 교과서는 빈도수가 가장 높은 단어를 「주제어」, TF-IDF가 가장 높은 단어를
+      // 「유용한 정보」로 따로 부른다. 이 둘이 어긋나는 장면이 수업의 알맹이라
+      // 주제어를 따로 뽑아 함께 들려 보낸다.
+      const ranked = [...document.termCounts.entries()]
+        .filter(([term]) => rowByTerm.has(term))
+        .sort((a, b) => {
+          if (b[1] !== a[1]) return b[1] - a[1];
+          return a[0].localeCompare(b[0], "ko");
+        });
+      const topicWord = ranked.length > 0
+        ? { term: ranked[0][0], count: ranked[0][1] }
+        : null;
+
+      return { ...document, topKeywords, topicWord };
     });
 
     return {
