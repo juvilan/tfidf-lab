@@ -394,7 +394,7 @@
       section.articles.forEach((article) => addArticle(article.id));
       refreshPickers();
       saveState();
-      setStatus(`${section.label} 다섯 편을 담았습니다.`, "good");
+      setStatus(`${section.label} ${section.articles.length}편을 담았습니다.`, "good");
       reanalyzeIfShown();
       return;
     }
@@ -405,7 +405,7 @@
       theme.articles.forEach((article) => addArticle(article.id));
       refreshPickers();
       saveState();
-      setStatus(`${theme.label} 다섯 편을 담았습니다.`, "good");
+      setStatus(`${theme.label} ${theme.articles.length}편을 담았습니다.`, "good");
       reanalyzeIfShown();
     }
   }

@@ -91,7 +91,7 @@
           <h3>${escapeHtml(section.label)}</h3>
           <p class="desc">${escapeHtml(section.description)}</p>
           <button class="button tiny" type="button" data-add-section="${section.id}">
-            다섯 편 모두 담기
+            ${section.articles.length}편 모두 담기
           </button>
           <ul>
             ${section.articles
@@ -124,7 +124,7 @@
           <h3>${escapeHtml(theme.label)}</h3>
           <p class="desc">${escapeHtml(theme.description)}</p>
           <button class="button tiny" type="button" data-add-theme="${theme.id}">
-            다섯 편 모두 담기
+            ${theme.articles.length}편 모두 담기
           </button>
           <ul>
             ${theme.articles

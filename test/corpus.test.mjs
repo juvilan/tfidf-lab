@@ -21,17 +21,17 @@ function tokenCountOf(text) {
   return lab.tokenizer.tokenize(text, { lexicon, minTokenLength: 2 }).tokens.length;
 }
 
-test("일곱 섹션이 각각 다섯 편씩 있다", () => {
+test("일곱 섹션이 각각 여섯 편씩 있다", () => {
   assert.deepEqual(
     [...sections.map((section) => section.id)].sort(),
     [...EXPECTED_SECTIONS].sort(),
   );
 
   for (const section of sections) {
-    assert.equal(section.articles.length, 5, `${section.label}은 다섯 편이어야 한다`);
+    assert.equal(section.articles.length, 6, `${section.label}은 여섯 편이어야 한다`);
   }
 
-  assert.equal(articles.length, 35);
+  assert.equal(articles.length, 42);
 });
 
 test("모든 글에 필요한 항목이 채워져 있다", () => {
@@ -48,7 +48,7 @@ test("모든 문서의 단어 수가 70에서 130 사이다", () => {
   // 글자 수가 아니라 토큰 수로 재야 한다. 글자로 재면 테스트는 통과하는데
   // DF가 심심한 문서가 섞인다.
   //
-  // 하한 70은 DF 성질에서 역산한 값이다. 이보다 짧으면 한 섹션 다섯 편이
+  // 하한 70은 DF 성질에서 역산한 값이다. 이보다 짧으면 한 섹션 여섯 편이
   // 공통어를 나눠 가질 여지가 사라져 IDF가 0으로 떨어지는 장면을 못 본다.
   // 상한 130은 읽는 시간과 길이 편차에서 잡았다. TF가 등장 횟수 그대로라
   // 긴 문서가 그냥 유리해지므로 편차를 좁혀 둔다.
@@ -80,7 +80,7 @@ test("한 섹션을 통째로 넣으면 공통어의 IDF가 0이 된다", () => 
     const shared = analysis.rows.filter((row) => row.df === section.articles.length);
     assert.ok(
       shared.length >= 3,
-      `${section.label}: 다섯 편 모두에 나오는 낱말이 ${shared.length}종뿐이다`,
+      `${section.label}: 여섯 편 모두에 나오는 낱말이 ${shared.length}종뿐이다`,
     );
 
     for (const row of shared) {
