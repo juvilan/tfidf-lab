@@ -190,3 +190,27 @@ test("남은 단어가 없으면 주제어도 없다", () => {
 
   assert.equal(analysis.summaries[0].topicWord, null);
 });
+
+test("최다 빈도가 동점이면 주제어를 모두 내놓는다", () => {
+  // 하나만 골라 보여 주면 손으로 센 학생이 다른 답을 얻어 도구가 틀린 것처럼
+  // 보인다. 42편 가운데 14편이 동점이라 드물게 생기는 일이 아니다.
+  const analysis = analyze(
+    [
+      { id: "a", title: "가", text: "물가 물가 성장 성장 수출" },
+      { id: "b", title: "나", text: "내수 고용" },
+    ],
+    { idfMode: "ratio", minTokenLength: 2 },
+  );
+  const docA = analysis.summaries.find((document) => document.id === "a");
+
+  assert.equal(docA.topicWord.count, 2);
+  assert.deepEqual([...docA.topicWord.terms].sort(), ["물가", "성장"]);
+  assert.ok(docA.topicWord.terms.includes(docA.topicWord.term));
+});
+
+test("동점이 없으면 주제어는 하나뿐이다", () => {
+  const analysis = analyze(DOCS, { idfMode: "ratio", minTokenLength: 2 });
+  const docA = analysis.summaries.find((document) => document.id === "a");
+
+  assert.deepEqual([...docA.topicWord.terms], ["물가"]);
+});

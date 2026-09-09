@@ -310,8 +310,12 @@
           ${
             document.topicWord
               ? `<p class="topic-word">
-                   주제어 <b>${escapeHtml(document.topicWord.term)}</b>
-                   <small>${document.topicWord.count}회 — 가장 많이 나온 단어</small>
+                   주제어 <b>${document.topicWord.terms
+                     .map((term) => escapeHtml(term))
+                     .join(" · ")}</b>
+                   <small>${document.topicWord.count}회 — 가장 많이 나온 단어${
+                     document.topicWord.terms.length > 1 ? " (동점)" : ""
+                   }</small>
                  </p>`
               : ""
           }

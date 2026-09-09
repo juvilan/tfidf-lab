@@ -170,8 +170,15 @@
           if (b[1] !== a[1]) return b[1] - a[1];
           return a[0].localeCompare(b[0], "ko");
         });
+      // 최다 빈도를 여러 단어가 나눠 갖는 문서가 42편 가운데 14편이다.
+      // 하나만 골라 보여 주면 손으로 센 학생이 다른 답을 얻고 도구가
+      // 틀린 것처럼 보인다. 동점을 모두 들려 보낸다.
       const topicWord = ranked.length > 0
-        ? { term: ranked[0][0], count: ranked[0][1] }
+        ? {
+            term: ranked[0][0],
+            count: ranked[0][1],
+            terms: ranked.filter(([, count]) => count === ranked[0][1]).map(([term]) => term),
+          }
         : null;
 
       return { ...document, topKeywords, topicWord };

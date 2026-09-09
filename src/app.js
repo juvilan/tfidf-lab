@@ -81,6 +81,20 @@
     }
   }
 
+  // 저장할 때 예시 문서의 본문까지 통째로 넣는다. 학생이 「직접 넣기」로
+  // 쓴 글을 되살리려면 그래야 하기 때문이다. 그런데 그러면 코퍼스를 고쳐도
+  // 전에 쓴 브라우저에는 옛 본문이 그대로 살아 돌아온다. 새로고침해도
+  // 안 바뀌니 배포가 안 된 것처럼 보인다.
+  //
+  // 그래서 불러올 때 id로 코퍼스를 다시 찾아 최신 본문으로 갈아 끼운다.
+  // 코퍼스에 없는 id(학생이 직접 넣은 글)는 저장된 것을 그대로 둔다.
+  function refreshSavedDocuments(documents) {
+    return documents.map((document) => {
+      const article = corpus.getArticle(document.id);
+      return article ? { ...article } : document;
+    });
+  }
+
   function clearStorage() {
     try {
       window.clearTimeout(saveTimer);
@@ -579,7 +593,7 @@
   const saved = loadState();
 
   if (saved && Array.isArray(saved.documents) && saved.documents.length > 0) {
-    state.documents = saved.documents;
+    state.documents = refreshSavedDocuments(saved.documents);
     if (Array.isArray(saved.presetIds)) state.presetIds = new Set(saved.presetIds);
     if (Array.isArray(saved.customWords)) state.customWords = saved.customWords;
     if (Array.isArray(saved.keepWords)) state.keepWords = saved.keepWords;
