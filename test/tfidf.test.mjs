@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { lab } from "./helpers.mjs";
 
-const { analyze, formatFraction } = lab.tfidf;
+const { analyze } = lab.tfidf;
 
 const DOCS = [
   { id: "a", title: "가", text: "물가 물가 성장 수출" },
@@ -32,21 +32,47 @@ test("문서가 1개면 상용로그형 IDF가 0이라 모든 점수가 0이다"
   }
 });
 
-test("분수의 분자와 분모가 실제 값과 일치한다", () => {
-  // 학생이 손으로 검산한 값과 화면 값이 어긋나면 도구가 없느니만 못하다.
+test("TF는 그 글에 나온 횟수 그대로다", () => {
+  // 교과서가 TF를 횟수로 정의한다. 글 길이로 나누면 학생이 교과서 예제를
+  // 손으로 풀었을 때와 숫자가 달라져 도구가 없느니만 못하다.
   const analysis = analyze(DOCS, { idfMode: "log10", minTokenLength: 2 });
   const docA = analysis.documents.find((document) => document.id === "a");
   const row = analysis.rowByTerm.get("물가");
   const cell = row.cells.find((item) => item.docId === "a");
 
   assert.equal(cell.count, docA.termCounts.get("물가"));
-  assert.equal(cell.totalTerms, docA.totalTerms, "분모는 그 문서의 토큰 수여야 한다");
-  assert.equal(cell.tf, cell.count / cell.totalTerms);
+  assert.equal(cell.count, 2);
+  assert.equal(cell.tf, 2, "TF는 횟수 그대로여야 한다");
   assert.equal(cell.score, cell.tf * row.idf);
+
+  // 글 길이는 계산에 쓰지 않지만 화면에 보여 주려고 함께 들고 다닌다.
+  assert.equal(cell.totalTerms, docA.totalTerms);
 
   assert.equal(row.df, 2);
   assert.equal(row.documentCount, 2);
   assert.equal(row.idfExpression, "log10(2 / 2)");
+});
+
+test("길이가 다른 글에서 같은 횟수면 TF도 같다", () => {
+  // 횟수를 그대로 쓰므로 글 길이는 TF에 영향을 주지 않는다.
+  // 대신 긴 글일수록 낱말이 여러 번 나오기 쉬워 결과적으로 유리해진다.
+  const analysis = analyze(
+    [
+      { id: "short", title: "짧은 글", text: "물가 성장" },
+      { id: "long", title: "긴 글", text: "물가 내수 고용 수출 소비 투자 금리 환율" },
+    ],
+    { idfMode: "ratio", minTokenLength: 2 },
+  );
+
+  const row = analysis.rowByTerm.get("물가");
+  const short = row.cells.find((cell) => cell.docId === "short");
+  const long = row.cells.find((cell) => cell.docId === "long");
+
+  assert.equal(short.tf, 1);
+  assert.equal(long.tf, 1);
+  assert.equal(short.score, long.score, "횟수가 같으면 점수도 같아야 한다");
+  assert.equal(short.totalTerms, 2);
+  assert.equal(long.totalTerms, 8);
 });
 
 test("비율형 IDF는 N/DF 그대로다", () => {
@@ -103,11 +129,6 @@ test("빈 문서는 계산에서 빠진다", () => {
   );
 
   assert.equal(analysis.documentCount, 1);
-});
-
-test("formatFraction이 분수와 값을 함께 보여준다", () => {
-  assert.equal(formatFraction(3, 142), "3 / 142 = 0.0211");
-  assert.equal(formatFraction(1, 0), "0");
 });
 
 test("묶음을 켠 채로 낱말 하나만 되살릴 수 있다", () => {

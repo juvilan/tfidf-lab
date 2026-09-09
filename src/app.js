@@ -352,15 +352,23 @@
 
   function matrixCsv(analysis, kind) {
     const titles = analysis.documents.map((document) => document.title);
-    const rows = [
-      ["낱말", ...titles.map((title) => `${title} (값)`), ...titles.map((title) => `${title} (횟수/낱말수)`)],
+
+    if (kind === "tf") {
+      return tfidf.toCsv([
+        ["낱말", ...titles.map((title) => `${title} (횟수)`)],
+        ...analysis.rows.map((row) => [row.term, ...row.cells.map((cell) => cell.count)]),
+      ]);
+    }
+
+    return tfidf.toCsv([
+      ["낱말", "IDF", ...titles.map((title) => `${title} (TF-IDF)`), ...titles.map((title) => `${title} (횟수)`)],
       ...analysis.rows.map((row) => [
         row.term,
-        ...row.cells.map((cell) => tfidf.formatDecimal(kind === "tf" ? cell.tf : cell.score, 6)),
-        ...row.cells.map((cell) => `${cell.count}/${cell.totalTerms}`),
+        tfidf.formatDecimal(row.idf, 6),
+        ...row.cells.map((cell) => tfidf.formatDecimal(cell.score, 6)),
+        ...row.cells.map((cell) => cell.count),
       ]),
-    ];
-    return tfidf.toCsv(rows);
+    ]);
   }
 
   function dfIdfCsv(analysis) {

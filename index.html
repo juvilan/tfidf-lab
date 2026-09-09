@@ -239,16 +239,24 @@
             <strong>견주어 볼 것</strong> — 2단계에서 각자 적어 둔 핵심어와 견주어 보세요.
             맞힌 낱말은 왜 맞혔고, 빗나간 낱말은 왜 빗나갔을까요?
           </p>
+          <p class="tip">
+            <strong>한 걸음 더</strong> — TF는 나온 횟수를 그대로 씁니다. 그러면
+            긴 글일수록 점수가 커집니다. 「세어 본 결과」에서 글 길이를 견주어 보고,
+            길이 차이가 순위에 영향을 주는지 살펴보세요.
+            길이로 나누어 주는 방식도 있는데, 왜 그런 방식이 필요할까요?
+          </p>
         </div>
 
         <details class="explain">
           <summary>TF, DF, IDF가 무엇인지 다시 보기</summary>
           <div class="explain-body">
             <dl>
-              <dt>TF <span class="formula">그 글에 나온 횟수 ÷ 그 글의 낱말 수</span></dt>
+              <dt>TF <span class="formula">그 글에 나온 횟수</span></dt>
               <dd>
-                그 글에서 얼마나 자주 나왔는지입니다. 긴 글일수록 횟수가 커지므로
-                글의 길이로 나누어 견줄 수 있게 만듭니다.
+                그 글에서 몇 번 나왔는지 그대로 셉니다.
+                <strong>긴 글일수록 모든 낱말의 TF가 커집니다.</strong>
+                길이가 크게 다른 글끼리 견줄 때는 이 점을 감안해서 읽어야 합니다.
+                (횟수를 글 길이로 나누는 방식도 있지만 여기서는 교과서를 따라 횟수를 그대로 씁니다.)
               </dd>
               <dt>DF <span class="formula">그 낱말이 나온 글의 수</span></dt>
               <dd>몇 편에 나왔는지 셉니다. 다섯 편 모두에 나오면 DF는 5입니다.</dd>
@@ -308,7 +316,10 @@
           <div class="panel-head">
             <div>
               <h2>세어 본 결과</h2>
-              <p>아래 분수의 분모로 쓰이는 숫자입니다. 직접 세지 않아도 검산할 수 있습니다.</p>
+              <p>
+                글 수(N)는 IDF를 구할 때 씁니다. 글 길이는 계산에 들어가지 않지만,
+                <strong>긴 글일수록 TF가 커지므로</strong> 견줄 때 함께 보세요.
+              </p>
             </div>
           </div>
           <div id="tally" class="tally"></div>
@@ -343,7 +354,7 @@
           <div class="panel-head">
             <div>
               <h2>TF 표</h2>
-              <p>칸마다 <code>나온 횟수 / 그 글의 낱말 수 = 값</code>을 함께 적었습니다.</p>
+              <p>글마다 그 낱말이 몇 번 나왔는지 센 표입니다.</p>
             </div>
             <button id="download-tf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
@@ -354,7 +365,7 @@
           <div class="panel-head">
             <div>
               <h2>TF-IDF 표</h2>
-              <p>칸마다 <code>TF × IDF</code>의 재료를 함께 적었습니다. 숫자가 클수록 그 글에서 특징적인 낱말입니다.</p>
+              <p>칸마다 <code>횟수 × IDF</code>를 함께 적었습니다. 숫자가 클수록 그 글에서 특징적인 낱말입니다.</p>
             </div>
             <button id="download-tfidf" class="button ghost" type="button">CSV 내려받기</button>
           </div>

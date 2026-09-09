@@ -1,8 +1,12 @@
 // TF / DF / IDF 계산.
 //
-// 값만 돌려주지 않고 분자와 분모를 함께 들고 다닌다. 수업 목표가 TF-IDF를
-// 이해하는 것이므로 화면에 3/142 = 0.0211 처럼 보여줘야 하고, 그러려면
-// 계산 결과가 어디서 온 숫자인지를 잃어버리면 안 된다.
+// TF는 그 글에 나온 횟수를 그대로 쓴다. 고등학교 인공지능수학 교과서가
+// 그렇게 정의하기 때문이다. 글 길이로 나누는 상대 빈도도 문헌에 나오는
+// 정식 정의지만, 학생이 교과서 예제를 손으로 풀고 이 도구에 넣었을 때
+// 숫자가 달라지면 도구가 없느니만 못하다.
+//
+// 대신 글 길이를 함께 들고 다닌다. 길이가 다른 글끼리 견줄 때 긴 글이
+// 유리해진다는 점을 화면에서 짚어 줘야 하기 때문이다.
 (function attachTfidf(global) {
   const namespace = global.TfidfLab || (global.TfidfLab = {});
   const tokenizer = namespace.tokenizer;
@@ -118,7 +122,8 @@
 
       const cells = analyzed.map((document) => {
         const count = document.termCounts.get(term) || 0;
-        const tf = document.totalTerms > 0 ? count / document.totalTerms : 0;
+        // TF = 등장 횟수. totalTerms는 계산에 쓰지 않고 글 길이를 보여 주는 데만 쓴다.
+        const tf = count;
         return {
           docId: document.id,
           count,
@@ -176,14 +181,6 @@
     return Number(value || 0).toFixed(digits);
   }
 
-  // 3 / 142 = 0.0211
-  function formatFraction(numerator, denominator, digits = 4) {
-    if (!denominator) {
-      return "0";
-    }
-    return `${numerator} / ${denominator} = ${formatDecimal(numerator / denominator, digits)}`;
-  }
-
   function toCsv(rows) {
     return rows
       .map((row) =>
@@ -202,7 +199,6 @@
     analyze,
     countTerms,
     formatDecimal,
-    formatFraction,
     normalizeIdfMode,
     toCsv,
   };

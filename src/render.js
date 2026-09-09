@@ -2,7 +2,7 @@
 // 콜백으로 알린다. 계산 결과를 어떻게 보여 줄지가 이 파일에 모여 있다.
 (function attachRender(global) {
   const namespace = global.TfidfLab || (global.TfidfLab = {});
-  const { formatDecimal, formatFraction } = namespace.tfidf;
+  const { formatDecimal } = namespace.tfidf;
 
   function escapeHtml(value) {
     return String(value == null ? "" : value)
@@ -281,8 +281,8 @@
         value: `${analysis.documentCount}<small> 편</small>`,
       },
       ...analysis.documents.map((document) => ({
-        label: `${document.title} — 낱말 수`,
-        value: `${document.totalTerms}<small> 개 (서로 다른 낱말 ${document.uniqueTerms})</small>`,
+        label: `${document.title} — 글 길이`,
+        value: `${document.totalTerms}<small> 낱말 (서로 다른 낱말 ${document.uniqueTerms})</small>`,
       })),
     ];
 
@@ -316,7 +316,7 @@
                     <div class="keyword-line">
                       <span class="rank">${index + 1}</span>
                       <span class="term">${escapeHtml(keyword.term)}</span>
-                      <span class="calc">${keyword.count}/${keyword.totalTerms} × ${formatDecimal(
+                      <span class="calc">${keyword.count}회 × ${formatDecimal(
                         keyword.idf,
                       )}</span>
                       <span class="score">${formatDecimal(keyword.score)}</span>
@@ -440,16 +440,21 @@
             .map((row) => {
               const cells = row.cells
                 .map((cell) => {
-                  const value = kind === "tf" ? cell.tf : cell.score;
-                  const detail =
-                    kind === "tf"
-                      ? formatFraction(cell.count, cell.totalTerms)
-                      : `${cell.count}/${cell.totalTerms} × ${formatDecimal(row.idf)}`;
+                  if (kind === "tf") {
+                    // TF는 횟수 그대로다. 소수로 늘려 적으면 오히려 헷갈린다.
+                    return `<td>
+                      <span class="cell-main ${cell.count === 0 ? "zero" : ""}">${
+                        cell.count
+                      }</span>
+                      <span class="cell-calc">회</span>
+                    </td>`;
+                  }
+
                   return `<td>
-                    <span class="cell-main ${value === 0 ? "zero" : ""}">${formatDecimal(
-                      value,
+                    <span class="cell-main ${cell.score === 0 ? "zero" : ""}">${formatDecimal(
+                      cell.score,
                     )}</span>
-                    <span class="cell-calc">${escapeHtml(detail)}</span>
+                    <span class="cell-calc">${cell.count}회 × ${formatDecimal(row.idf)}</span>
                   </td>`;
                 })
                 .join("");
