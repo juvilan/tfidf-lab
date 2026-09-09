@@ -12,8 +12,8 @@
         <p class="eyebrow">고등학교 인공지능수학 실습 도구</p>
         <h1>핵심어 찾기 실험실</h1>
         <p class="lede">
-          글 여러 편을 견주어 <strong>그 글에서만 두드러지는 낱말</strong>을 찾습니다.
-          세는 일과 계산은 도구가 맡고, 어떤 낱말을 뺄지는 여러분이 정합니다.
+          문서 여러 편을 견주어 <strong>그 문서에서만 두드러지는 단어</strong>을 찾습니다.
+          세는 일과 계산은 도구가 맡고, 어떤 단어를 뺄지는 여러분이 정합니다.
         </p>
       </header>
 
@@ -21,7 +21,7 @@
       <nav class="steps" aria-label="진행 단계">
         <button class="step-chip is-current" type="button" data-goto="1">
           <span class="num">1</span>
-          <span class="name">글 고르기</span>
+          <span class="name">문서 고르기</span>
         </button>
         <button class="step-chip" type="button" data-goto="2">
           <span class="num">2</span>
@@ -48,10 +48,10 @@
       <!-- ============ 1단계 ============ -->
       <section class="step" data-step="1">
         <div class="guide">
-          <h2>1단계 · 견주어 볼 글을 고릅니다</h2>
+          <h2>1단계 · 견주어 볼 문서를 고릅니다</h2>
           <p>
-            TF-IDF는 <strong>글 한 편만 보고는 아무것도 말해 주지 못합니다.</strong>
-            어떤 낱말이 특별한지 알려면 견줄 상대가 있어야 하기 때문입니다.
+            TF-IDF는 <strong>문서 한 편만 보고는 아무것도 말해 주지 못합니다.</strong>
+            어떤 단어가 특별한지 알려면 견줄 상대가 있어야 하기 때문입니다.
             <strong>두 편 이상</strong>, 되도록 다섯 편을 담아 주세요.
           </p>
           <p class="tip">
@@ -76,7 +76,7 @@
 
           <div id="tab-sections" class="tab-body" role="tabpanel">
             <p class="hint">
-              한 분야의 글 다섯 편입니다. 그 분야에서 늘 쓰는 낱말은
+              한 분야의 문서 다섯 편입니다. 그 분야에서 늘 쓰는 단어는
               다섯 편 모두에 나오므로 <strong>핵심어가 되지 못합니다.</strong>
               그 장면을 보는 것이 이 묶음의 목적입니다.
             </p>
@@ -85,8 +85,8 @@
 
           <div id="tab-themes" class="tab-body hidden" role="tabpanel">
             <p class="hint">
-              섹션이 서로 다른 다섯 편인데도 같은 낱말이 나오도록 묶었습니다.
-              분야가 갈리면 공통 낱말이 적어져 <strong>더 많은 낱말이 살아남습니다.</strong>
+              섹션이 서로 다른 다섯 편인데도 같은 단어가 나오도록 묶었습니다.
+              분야가 갈리면 공통 단어가 적어져 <strong>더 많은 단어가 살아남습니다.</strong>
             </p>
             <div id="theme-list" class="card-grid"></div>
           </div>
@@ -102,17 +102,17 @@
             </label>
             <label class="field">
               <span>내용</span>
-              <textarea id="own-text" rows="7" placeholder="글을 붙여 넣으세요."></textarea>
+              <textarea id="own-text" rows="7" placeholder="문서를 붙여 넣으세요."></textarea>
             </label>
-            <button id="own-add" class="button primary" type="button">이 글 담기</button>
+            <button id="own-add" class="button primary" type="button">이 문서 담기</button>
           </div>
         </div>
 
         <div class="panel">
           <div class="panel-head">
             <div>
-              <h2>담은 글 <span id="basket-count" class="count-badge">0</span></h2>
-              <p>여기 담긴 글끼리만 견줍니다.</p>
+              <h2>담은 문서 <span id="basket-count" class="count-badge">0</span></h2>
+              <p>여기 담긴 문서끼리만 견줍니다.</p>
             </div>
             <button id="basket-clear" class="button ghost" type="button">모두 비우기</button>
           </div>
@@ -130,15 +130,15 @@
       <!-- ============ 2단계 ============ -->
       <section class="step hidden" data-step="2">
         <div class="guide">
-          <h2>2단계 · 글을 읽고 짐작해 봅니다</h2>
+          <h2>2단계 · 문서를 읽고 짐작해 봅니다</h2>
           <p>
             계산하기 전에 먼저 읽어 보세요. 그리고
-            <strong>「이 글의 핵심어는 무엇일까」</strong>를 각자 두세 개씩 적어 둡니다.
+            <strong>「이 문서의 핵심어는 무엇일까」</strong>를 각자 두세 개씩 적어 둡니다.
           </p>
           <p class="tip">
             <strong>왜 미리 적나요</strong> — 나중에 계산 결과와 견주기 위해서입니다.
             사람이 고른 핵심어와 수식이 고른 핵심어가 어디서 같고 어디서 다른지가
-            이 수업의 알맹이입니다. 자주 나온 낱말이 핵심어일 것 같지만,
+            이 수업의 알맹이입니다. 자주 나온 단어가 핵심어일 것 같지만,
             꼭 그렇지 않다는 것을 곧 보게 됩니다.
           </p>
         </div>
@@ -146,7 +146,7 @@
         <div id="reading" class="reading"></div>
 
         <div class="step-nav">
-          <button class="button" type="button" data-goto="1">← 글 고르기</button>
+          <button class="button" type="button" data-goto="1">← 문서 고르기</button>
           <button class="button primary large" type="button" data-goto="3">
             계산 방법 정하기 →
           </button>
@@ -164,11 +164,11 @@
         </div>
 
         <div class="panel">
-          <div class="panel-head"><h2>IDF 계산 방식</h2></div>
+          <div class="panel-head"><h2>IDF(역문서빈도) 계산 방식</h2></div>
           <p class="hint">
-            IDF는 <strong>「그 낱말이 얼마나 드문가」</strong>를 나타내는 수입니다.
-            여러 글에 두루 나오는 낱말일수록 작아집니다.
-            N은 글 수, DF는 그 낱말이 나온 글의 수입니다.
+            IDF는 <strong>「그 단어가 얼마나 드문가」</strong>를 나타내는 수입니다.
+            여러 문서에 두루 나오는 단어일수록 작아집니다.
+            N은 문서 수, DF는 그 단어가 나온 문서의 수입니다.
           </p>
           <fieldset class="choice-group">
             <legend class="sr-only">IDF 계산 방식</legend>
@@ -177,8 +177,9 @@
               <span>
                 <strong>비율형 — IDF = N / DF</strong>
                 <small>
+                  <strong>교과서에서 쓰는 방식입니다.</strong>
                   다섯 편 모두에 나오면 5/5 = 1, 한 편에만 나오면 5/1 = 5.
-                  나눗셈만 하면 되어 이해하기 쉽습니다. 다만 아무리 흔해도 1보다 작아지지 않습니다.
+                  나눗셈만 하면 되어 손으로 따라가기 쉽습니다.
                 </small>
               </span>
             </label>
@@ -187,35 +188,72 @@
               <span>
                 <strong>상용로그형 — IDF = log10(N / DF)</strong>
                 <small>
-                  실제로 쓰는 방식입니다. 다섯 편 모두에 나오면 log10(1) = 0이 되어
-                  <strong>점수가 0으로 사라집니다.</strong> 흔한 낱말을 확실히 눌러 줍니다.
+                  검색 엔진처럼 문서가 아주 많을 때 쓰는 방식입니다.
+                  아래 설명을 읽고 왜 로그를 씌우는지 생각해 보세요.
                 </small>
               </span>
             </label>
           </fieldset>
+
+          <details class="explain inner">
+            <summary>실제로는 왜 로그를 씌울까</summary>
+            <div class="explain-body">
+              <p>
+                문서가 다섯 편뿐이면 N / DF는 아무리 커야 5입니다. 다룰 만한 크기죠.
+                그런데 검색 엔진처럼 <strong>문서가 10,000편</strong>이라면 이야기가 달라집니다.
+              </p>
+              <table class="mini-table">
+                <thead>
+                  <tr><th>몇 편에 나왔나 (DF)</th><th>N / DF</th><th>log10(N / DF)</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>1편</td><td>10,000</td><td>4.00</td></tr>
+                  <tr><td>2편</td><td>5,000</td><td>3.70</td></tr>
+                  <tr><td>10편</td><td>1,000</td><td>3.00</td></tr>
+                  <tr><td>10,000편 (전부)</td><td>1</td><td>0.00</td></tr>
+                </tbody>
+              </table>
+              <p>
+                한 편에 나온 단어와 두 편에 나온 단어의 IDF가
+                <strong>10,000과 5,000, 5,000이나 벌어집니다.</strong>
+                이러면 TF가 아무리 커도 IDF 하나가 점수를 다 결정해 버립니다.
+                로그를 씌우면 4.00과 3.70이 되어 차이가 완만해지고,
+                TF와 IDF가 함께 점수를 만들 수 있게 됩니다.
+              </p>
+              <p>
+                하나 더 있습니다. 모든 문서에 나오는 단어는 N / DF = 1이라
+                비율형에서는 곱해도 점수가 그대로 남습니다.
+                로그를 씌우면 log10(1) = 0이 되어 <strong>점수가 아예 사라집니다.</strong>
+              </p>
+              <p class="hint">
+                수업에서는 문서가 몇 편뿐이라 비율형으로 충분합니다.
+                로그는 문서가 많아졌을 때 왜 필요해지는지를 보여 주는 장치로 켜 보세요.
+              </p>
+            </div>
+          </details>
         </div>
 
         <div class="panel">
           <div class="panel-head"><h2>표 보기</h2></div>
           <label class="field inline">
-            <span>표에 보여줄 낱말 수</span>
+            <span>표에 보여줄 단어 수</span>
             <input id="visible-terms" type="number" min="0" max="500" value="40" />
           </label>
           <p class="hint">
-            계산은 모든 낱말로 하고 표에만 상위 몇 개를 보여 줍니다. 0을 넣으면 전부 봅니다.
+            계산은 모든 단어로 하고 표에만 상위 몇 개를 보여 줍니다. 0을 넣으면 전부 봅니다.
           </p>
         </div>
 
         <div class="panel">
-          <div class="panel-head"><h2>자동으로 빼는 낱말</h2></div>
+          <div class="panel-head"><h2>자동으로 빼는 단어</h2></div>
           <p class="hint">
             아래 세 가지는 도구가 알아서 뺍니다. 미리 정할 필요가 없습니다.
-            <strong>다음 단계의 「빠진 낱말」에서 낱말을 누르면 언제든 되살릴 수 있습니다.</strong>
+            <strong>다음 단계의 「빠진 단어」에서 단어를 누르면 언제든 되살릴 수 있습니다.</strong>
           </p>
           <ul class="plain-list">
             <li><strong>서술어</strong> — 「있습니다」, 「하겠습니다」처럼 문장을 맺는 말</li>
-            <li><strong>한 글자 낱말</strong> — 「수」, 「것」처럼 혼자서는 뜻이 흐린 말</li>
-            <li><strong>숫자만 있는 낱말</strong> — 0.3, 2026 같은 것</li>
+            <li><strong>한 글자 단어</strong> — 「수」, 「것」처럼 혼자서는 뜻이 흐린 말</li>
+            <li><strong>숫자만 있는 단어</strong> — 0.3, 2026 같은 것</li>
           </ul>
         </div>
 
@@ -230,18 +268,18 @@
         <div class="guide">
           <h2>4단계 · 결과를 보고 걸러 냅니다</h2>
           <p>
-            결과 표에서 낱말 옆 <strong>&times;</strong>를 누르면 그 낱말이 빠지고
-            바로 다시 계산됩니다. 반대로 <strong>「빠진 낱말」에서 낱말을 누르면 되살아납니다.</strong>
-            묶음으로 뺀 것이든 도구가 뺀 것이든 낱말 하나씩 되돌릴 수 있습니다.
+            결과 표에서 단어 옆 <strong>&times;</strong>를 누르면 그 단어가 빠지고
+            바로 다시 계산됩니다. 반대로 <strong>「빠진 단어」에서 단어를 누르면 되살아납니다.</strong>
+            묶음으로 뺀 것이든 도구가 뺀 것이든 단어 하나씩 되돌릴 수 있습니다.
             <strong>빼고 → 다시 보고 → 되살리는 것이 이 단계의 전부입니다.</strong>
           </p>
           <p class="tip">
             <strong>견주어 볼 것</strong> — 2단계에서 각자 적어 둔 핵심어와 견주어 보세요.
-            맞힌 낱말은 왜 맞혔고, 빗나간 낱말은 왜 빗나갔을까요?
+            맞힌 단어는 왜 맞혔고, 빗나간 단어는 왜 빗나갔을까요?
           </p>
           <p class="tip">
             <strong>한 걸음 더</strong> — TF는 나온 횟수를 그대로 씁니다. 그러면
-            긴 글일수록 점수가 커집니다. 「세어 본 결과」에서 글 길이를 견주어 보고,
+            긴 문서일수록 점수가 커집니다. 「세어 본 결과」에서 문서 길이를 견주어 보고,
             길이 차이가 순위에 영향을 주는지 살펴보세요.
             길이로 나누어 주는 방식도 있는데, 왜 그런 방식이 필요할까요?
           </p>
@@ -251,23 +289,26 @@
           <summary>TF, DF, IDF가 무엇인지 다시 보기</summary>
           <div class="explain-body">
             <dl>
-              <dt>TF <span class="formula">그 글에 나온 횟수</span></dt>
+              <dt>TF · 단어빈도 <span class="formula">각 문서에서 그 단어가 나오는 횟수</span></dt>
               <dd>
-                그 글에서 몇 번 나왔는지 그대로 셉니다.
-                <strong>긴 글일수록 모든 낱말의 TF가 커집니다.</strong>
-                길이가 크게 다른 글끼리 견줄 때는 이 점을 감안해서 읽어야 합니다.
-                (횟수를 글 길이로 나누는 방식도 있지만 여기서는 교과서를 따라 횟수를 그대로 씁니다.)
+                그 문서에서 몇 번 나왔는지 그대로 셉니다.
+                <strong>긴 문서일수록 모든 단어의 TF가 커집니다.</strong>
+                길이가 크게 다른 문서끼리 견줄 때는 이 점을 감안해서 읽어야 합니다.
+                (횟수를 문서 길이로 나누는 방식도 있지만 여기서는 교과서를 따라 횟수를 그대로 씁니다.)
               </dd>
-              <dt>DF <span class="formula">그 낱말이 나온 글의 수</span></dt>
+              <dt>DF · 문서빈도 <span class="formula">각 단어별로 그 단어가 나오는 문서의 개수</span></dt>
               <dd>몇 편에 나왔는지 셉니다. 다섯 편 모두에 나오면 DF는 5입니다.</dd>
-              <dt>IDF <span class="formula">N / DF 또는 log10(N / DF)</span></dt>
+              <dt>IDF · 역문서빈도 <span class="formula">전체 문서의 개수 / DF</span></dt>
               <dd>
-                DF가 클수록 작아집니다. <strong>여기저기 다 나오는 낱말을 눌러 주는 몫</strong>입니다.
+                DF가 클수록 작아집니다. <strong>여기저기 다 나오는 단어를 눌러 주는 몫</strong>입니다.
+                문서가 다섯 편일 때 한 편에만 나오면 5, 다섯 편 모두에 나오면 1이 됩니다.
+                문서가 아주 많은 곳에서는 이 값이 너무 커져서 <code>log10(N / DF)</code>를
+                쓰는데, 그 까닭은 3단계의 「실제로는 왜 로그를 씌울까」에 적어 두었습니다.
               </dd>
               <dt>TF-IDF <span class="formula">TF × IDF</span></dt>
               <dd>
-                자주 나오면서 <strong>동시에</strong> 다른 글에는 잘 없는 낱말이 높은 점수를 받습니다.
-                많이 나온 낱말이 아니라 <strong>여기서만 많이 나온 낱말</strong>을 찾는 것입니다.
+                자주 나오면서 <strong>동시에</strong> 다른 문서에는 잘 없는 단어가 높은 점수를 받습니다.
+                많이 나온 단어가 아니라 <strong>여기서만 많이 나온 단어</strong>을 찾는 것입니다.
               </dd>
             </dl>
           </div>
@@ -276,24 +317,24 @@
         <div class="panel controls">
           <div class="panel-head">
             <div>
-              <h2>뺄 낱말 고르기</h2>
-              <p>무엇을 빼야 하는지는 글에 따라 다릅니다. 정답이 정해져 있지 않습니다.</p>
+              <h2>뺄 단어 고르기</h2>
+              <p>무엇을 빼야 하는지는 문서에 따라 다릅니다. 정답이 정해져 있지 않습니다.</p>
             </div>
           </div>
 
           <h3 class="sub">묶음으로 빼기</h3>
           <p class="hint">
-            체크하면 그 묶음의 낱말이 한 번에 빠집니다. 이름을 눌러 어떤 낱말이 들어 있는지 볼 수 있습니다.
+            체크하면 그 묶음의 단어가 한 번에 빠집니다. 이름을 눌러 어떤 단어가 들어 있는지 볼 수 있습니다.
           </p>
           <div id="preset-list" class="preset-list"></div>
 
-          <h3 class="sub">내가 뺀 낱말 <span id="custom-count" class="count-badge">0</span></h3>
-          <p class="hint">아래 표에서 낱말 옆 &times;를 누르면 여기로 옵니다. 칩을 누르면 되돌립니다.</p>
+          <h3 class="sub">내가 뺀 단어 <span id="custom-count" class="count-badge">0</span></h3>
+          <p class="hint">아래 표에서 단어 옆 &times;를 누르면 여기로 옵니다. 칩을 누르면 되돌립니다.</p>
           <div id="custom-chips" class="chip-row"></div>
 
-          <h3 class="sub">되살린 낱말 <span id="keep-count" class="count-badge">0</span></h3>
+          <h3 class="sub">되살린 단어 <span id="keep-count" class="count-badge">0</span></h3>
           <p class="hint">
-            묶음이나 도구가 뺐지만 다시 세기로 한 낱말입니다. 칩을 누르면 도로 뺍니다.
+            묶음이나 도구가 뺐지만 다시 세기로 한 단어입니다. 칩을 누르면 도로 뺍니다.
           </p>
           <div id="keep-chips" class="chip-row"></div>
           <label class="field">
@@ -305,8 +346,8 @@
         <div class="panel controls">
           <div class="panel-head">
             <div>
-              <h2>빠진 낱말</h2>
-              <p>무엇이 왜 빠졌는지 확인해 보세요. <strong>낱말을 누르면 되살아납니다.</strong></p>
+              <h2>빠진 단어</h2>
+              <p>무엇이 왜 빠졌는지 확인해 보세요. <strong>단어를 누르면 되살아납니다.</strong></p>
             </div>
           </div>
           <div id="removed" class="removed"></div>
@@ -317,8 +358,8 @@
             <div>
               <h2>세어 본 결과</h2>
               <p>
-                글 수(N)는 IDF를 구할 때 씁니다. 글 길이는 계산에 들어가지 않지만,
-                <strong>긴 글일수록 TF가 커지므로</strong> 견줄 때 함께 보세요.
+                문서 수(N)는 IDF를 구할 때 씁니다. 문서 길이는 계산에 들어가지 않지만,
+                <strong>긴 문서일수록 TF가 커지므로</strong> 견줄 때 함께 보세요.
               </p>
             </div>
           </div>
@@ -328,7 +369,7 @@
         <div class="panel">
           <div class="panel-head">
             <div>
-              <h2>글마다의 핵심어</h2>
+              <h2>문서별 핵심어</h2>
               <p>TF-IDF 점수가 높은 순서입니다. 「원문에서 확인하기」를 누르면 어디에 있는 말인지 보입니다.</p>
             </div>
           </div>
@@ -338,14 +379,15 @@
         <div class="panel">
           <div class="panel-head">
             <div>
-              <h2>DF · IDF 표</h2>
+              <h2>DF(문서빈도) · IDF(역문서빈도) 표</h2>
               <p id="idf-caption"></p>
             </div>
             <button id="download-dfidf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
           <p class="hint">
-            DF가 클수록 IDF가 작아집니다. <strong>DF가 글 수와 같아지면 IDF가 0</strong>이 되어
-            그 낱말은 아무리 많이 나와도 점수가 0입니다. (상용로그형일 때)
+            DF가 클수록 IDF가 작아집니다. 비율형에서는 모든 문서에 나오는 단어의 IDF가 1이 되고,
+            상용로그형에서는 <strong>0이 되어 점수가 아예 사라집니다.</strong>
+            두 방식을 번갈아 켜 보며 순위가 어떻게 달라지는지 견주어 보세요.
           </p>
           <div id="dfidf-table" class="table-wrap"></div>
         </div>
@@ -353,8 +395,8 @@
         <div class="panel">
           <div class="panel-head">
             <div>
-              <h2>TF 표</h2>
-              <p>글마다 그 낱말이 몇 번 나왔는지 센 표입니다.</p>
+              <h2>TF(단어빈도) 표</h2>
+              <p>문서마다 그 단어가 몇 번 나왔는지 센 표입니다.</p>
             </div>
             <button id="download-tf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
@@ -365,7 +407,7 @@
           <div class="panel-head">
             <div>
               <h2>TF-IDF 표</h2>
-              <p>칸마다 <code>횟수 × IDF</code>를 함께 적었습니다. 숫자가 클수록 그 글에서 특징적인 낱말입니다.</p>
+              <p>칸마다 <code>횟수 × IDF</code>를 함께 적었습니다. 숫자가 클수록 그 문서에서 특징적인 단어입니다.</p>
             </div>
             <button id="download-tfidf" class="button ghost" type="button">CSV 내려받기</button>
           </div>
@@ -374,12 +416,12 @@
 
         <div class="step-nav">
           <button class="button" type="button" data-goto="3">← 계산 방법 바꾸기</button>
-          <button class="button" type="button" data-goto="1">다른 글로 다시 하기</button>
+          <button class="button" type="button" data-goto="1">다른 문서로 다시 하기</button>
         </div>
       </section>
 
       <footer class="page-footer">
-        <p>예시 글 35편은 수업용으로 지어낸 글입니다. 실제 보도가 아니며 실존하는 인물·기업·기관·통계를 담고 있지 않습니다.</p>
+        <p>예시 문서 35편은 수업용으로 지어낸 문서입니다. 실제 보도가 아니며 실존하는 인물·기업·기관·통계를 담고 있지 않습니다.</p>
         <p>MIT License · 외부 라이브러리 없이 동작합니다.</p>
       </footer>
     </main>

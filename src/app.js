@@ -124,7 +124,7 @@
       setStatus(
         target === 4
           ? "먼저 3단계에서 계산하기를 눌러 주세요."
-          : "먼저 글을 한 편 이상 담아 주세요.",
+          : "먼저 문서를 한 편 이상 담아 주세요.",
         "warn",
       );
       return;
@@ -157,7 +157,7 @@
   }
 
   // innerHTML로 다시 그리면 펼쳐 둔 details가 닫히고 스크롤이 튄다.
-  // 낱말을 하나 누를 때마다 목록이 접히면 여러 개를 고를 수가 없다.
+  // 단어를 하나 누를 때마다 목록이 접히면 여러 개를 고를 수가 없다.
   function keepOpenState(render) {
     const open = new Set(
       [...document.querySelectorAll("details[data-open-key][open]")].map((details) =>
@@ -180,7 +180,7 @@
     ui.status.className = `status${tone ? ` ${tone}` : ""}`;
   }
 
-  // ---------- 담은 글 ----------
+  // ---------- 담은 문서 ----------
 
   const pickedIds = () => new Set(state.documents.map((document) => document.id));
 
@@ -214,7 +214,7 @@
     ui.keepCount.textContent = String(state.keepWords.length);
   }
 
-  // 결과를 보고 고른 낱말과 직접 적어 넣은 낱말을 합친다.
+  // 결과를 보고 고른 단어와 직접 적어 넣은 단어를 합친다.
   function allCustomWords() {
     return [...new Set([...state.customWords, ...stopwords.parseCustomInput(ui.customInput.value)])];
   }
@@ -269,7 +269,7 @@
 
   function analyze() {
     if (state.documents.length === 0) {
-      setStatus("먼저 글을 담아 주세요.", "warn");
+      setStatus("먼저 문서를 담아 주세요.", "warn");
       return;
     }
 
@@ -290,7 +290,7 @@
     state.analysis = analysis;
 
     if (analysis.rows.length === 0) {
-      setStatus("남은 낱말이 없습니다. 뺀 낱말이나 설정을 다시 살펴 주세요.", "warn");
+      setStatus("남은 단어가 없습니다. 뺀 단어나 설정을 다시 살펴 주세요.", "warn");
       return;
     }
 
@@ -305,10 +305,10 @@
       render.renderMatrix(ui.tfTable, analysis, rows, "tf");
       render.renderMatrix(ui.tfidfTable, analysis, rows, "tfidf");
     });
-    ui.idfCaption.textContent = `IDF = ${analysis.idfModeMeta.formula} (N은 글 수, DF는 그 낱말이 나온 글 수)`;
+    ui.idfCaption.textContent = `IDF = ${analysis.idfModeMeta.formula} (N은 문서 수, DF는 그 단어가 나온 문서 수)`;
 
     const messages = [
-      `글 ${analysis.documentCount}편에서 서로 다른 낱말 ${analysis.rows.length}개를 찾았습니다.`,
+      `글 ${analysis.documentCount}편에서 서로 다른 단어 ${analysis.rows.length}개를 찾았습니다.`,
     ];
 
     if (limit > 0 && analysis.rows.length > limit) {
@@ -321,11 +321,11 @@
       tone = "warn";
       messages.push(
         settings.idfMode === "log10"
-          ? "글이 한 편이면 IDF = log10(1/1) = 0이라 모든 TF-IDF가 0이 됩니다. 두 편 이상 담아 보세요."
-          : "글이 한 편이면 IDF가 모두 1이라 TF-IDF가 TF와 같아집니다. 두 편 이상 담아야 IDF가 일합니다.",
+          ? "문서가 한 편이면 IDF = log10(1/1) = 0이라 모든 TF-IDF가 0이 됩니다. 두 편 이상 담아 보세요."
+          : "문서가 한 편이면 IDF가 모두 1이라 TF-IDF가 TF와 같아집니다. 두 편 이상 담아야 IDF가 일합니다.",
       );
     } else if (analysis.rows.some((row) => row.idf === 0)) {
-      messages.push("모든 글에 나온 낱말은 IDF가 0이라 점수도 0입니다.");
+      messages.push("모든 문서에 나온 단어는 IDF가 0이라 점수도 0입니다.");
     }
 
     setStatus(messages.join(" "), tone);
@@ -338,7 +338,7 @@
   // ---------- CSV ----------
 
   function download(filename, content) {
-    // 윈도우 엑셀은 BOM이 없으면 UTF-8로 읽지 않아 한글이 깨진다.
+    // 윈도우 엑셀은 BOM이 없으면 UTF-8로 읽지 않아 한문서가 깨진다.
     const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -355,13 +355,13 @@
 
     if (kind === "tf") {
       return tfidf.toCsv([
-        ["낱말", ...titles.map((title) => `${title} (횟수)`)],
+        ["단어", ...titles.map((title) => `${title} (횟수)`)],
         ...analysis.rows.map((row) => [row.term, ...row.cells.map((cell) => cell.count)]),
       ]);
     }
 
     return tfidf.toCsv([
-      ["낱말", "IDF", ...titles.map((title) => `${title} (TF-IDF)`), ...titles.map((title) => `${title} (횟수)`)],
+      ["단어", "IDF", ...titles.map((title) => `${title} (TF-IDF)`), ...titles.map((title) => `${title} (횟수)`)],
       ...analysis.rows.map((row) => [
         row.term,
         tfidf.formatDecimal(row.idf, 6),
@@ -373,7 +373,7 @@
 
   function dfIdfCsv(analysis) {
     return tfidf.toCsv([
-      ["낱말", "전체 횟수", "DF", "글 수(N)", "IDF", "IDF 식"],
+      ["단어", "전체 횟수", "DF", "문서 수(N)", "IDF", "IDF 식"],
       ...analysis.rows.map((row) => [
         row.term,
         row.totalCount,
@@ -445,7 +445,7 @@
     refreshPickers();
     clearStorage();
     goToStep(1);
-    setStatus("담은 글을 모두 비웠습니다.");
+    setStatus("담은 문서를 모두 비웠습니다.");
   });
 
   ui.ownAdd.addEventListener("click", () => {
@@ -458,7 +458,7 @@
     state.ownCounter += 1;
     state.documents.push({
       id: `own-${Date.now()}-${state.ownCounter}`,
-      title: ui.ownTitle.value.trim() || `내 글 ${state.ownCounter}`,
+      title: ui.ownTitle.value.trim() || `내 문서 ${state.ownCounter}`,
       text,
       section: null,
       sectionLabel: null,
@@ -469,7 +469,7 @@
     ui.ownText.value = "";
     refreshPickers();
     saveState();
-    setStatus("내 글을 담았습니다.", "good");
+    setStatus("내 문서를 담았습니다.", "good");
     reanalyzeIfShown();
   });
 
@@ -584,7 +584,7 @@
     if (Array.isArray(saved.customWords)) state.customWords = saved.customWords;
     if (Array.isArray(saved.keepWords)) state.keepWords = saved.keepWords;
     applySettings(saved.settings);
-    setStatus("지난번에 담아 둔 글을 불러왔습니다. 계산하기를 눌러 보세요.");
+    setStatus("지난번에 담아 둔 문서를 불러왔습니다. 계산하기를 눌러 보세요.");
   }
 
   refreshPickers();

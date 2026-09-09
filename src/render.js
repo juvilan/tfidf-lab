@@ -81,7 +81,7 @@
       .join("");
   }
 
-  // ---------- 글 고르기 ----------
+  // ---------- 문서 고르기 ----------
 
   function renderSections(container, sections, pickedIds) {
     container.innerHTML = sections
@@ -153,7 +153,7 @@
   function renderBasket(container, documents) {
     if (documents.length === 0) {
       container.innerHTML =
-        '<p class="basket-empty">아직 담은 글이 없습니다. 위에서 골라 주세요.</p>';
+        '<p class="basket-empty">아직 담은 문서가 없습니다. 위에서 골라 주세요.</p>';
       return;
     }
 
@@ -163,7 +163,7 @@
         <div class="basket-item">
           <div class="basket-head">
             <span class="tag ${document.fictional ? "section" : "mine"}">${escapeHtml(
-              document.sectionLabel || "내 글",
+              document.sectionLabel || "내 문서",
             )}</span>
             <span class="title">${escapeHtml(document.title)}</span>
             ${document.fictional ? '<span class="tag fictional">가상 기사</span>' : ""}
@@ -178,11 +178,11 @@
       .join("");
   }
 
-  // 2단계. 담은 글을 펼쳐 놓고 읽는 화면.
+  // 2단계. 담은 문서를 펼쳐 놓고 읽는 화면.
   function renderReading(container, documents) {
     if (documents.length === 0) {
       container.innerHTML =
-        '<p class="basket-empty">담은 글이 없습니다. 1단계로 돌아가 골라 주세요.</p>';
+        '<p class="basket-empty">담은 문서가 없습니다. 1단계로 돌아가 골라 주세요.</p>';
       return;
     }
 
@@ -196,7 +196,7 @@
             ${
               document.fictional
                 ? '<span class="tag fictional">가상 기사</span>'
-                : '<span class="tag mine">내 글</span>'
+                : '<span class="tag mine">내 문서</span>'
             }
           </div>
           <div class="article-body">${renderArticleBody(document.text)}</div>
@@ -226,7 +226,7 @@
               <span class="count-badge">${preset.words.length}</span>
             </span>
           </summary>
-          <p class="preset-hint">낱말을 누르면 그 낱말만 되살립니다. 다시 누르면 도로 뺍니다.</p>
+          <p class="preset-hint">단어를 누르면 그 단어만 되살립니다. 다시 누르면 도로 뺍니다.</p>
           <div class="preset-words">
             ${preset.words
               .map(
@@ -246,7 +246,7 @@
 
   function renderKeepChips(container, words) {
     if (words.length === 0) {
-      container.innerHTML = '<p class="hint">되살린 낱말이 아직 없습니다.</p>';
+      container.innerHTML = '<p class="hint">되살린 단어가 아직 없습니다.</p>';
       return;
     }
 
@@ -277,12 +277,12 @@
   function renderTally(container, analysis) {
     const cards = [
       {
-        label: "글 수 (N)",
+        label: "전체 문서의 개수 (N)",
         value: `${analysis.documentCount}<small> 편</small>`,
       },
       ...analysis.documents.map((document) => ({
-        label: `${document.title} — 글 길이`,
-        value: `${document.totalTerms}<small> 낱말 (서로 다른 낱말 ${document.uniqueTerms})</small>`,
+        label: `${document.title} — 문서 길이`,
+        value: `${document.totalTerms}<small> 단어 (서로 다른 단어 ${document.uniqueTerms})</small>`,
       })),
     ];
 
@@ -304,12 +304,12 @@
         <article class="summary-card">
           <h3>${escapeHtml(document.title)}</h3>
           <p class="meta">
-            낱말 ${document.totalTerms}개
+            단어 ${document.totalTerms}개
             ${document.fictional ? '· <span class="tag fictional">가상 기사</span>' : ""}
           </p>
           ${
             document.topKeywords.length === 0
-              ? '<p class="meta">남은 낱말이 없어 핵심어를 뽑지 못했습니다.</p>'
+              ? '<p class="meta">남은 단어가 없어 핵심어를 뽑지 못했습니다.</p>'
               : document.topKeywords
                   .map(
                     (keyword, index) => `
@@ -345,7 +345,7 @@
   }
 
   const REMOVED_LABELS = {
-    stopword: "내가 뺀 낱말과 묶음",
+    stopword: "내가 뺀 단어와 묶음",
     verb: "서술어로 판단해 뺌",
     tooShort: "한 글자라 뺌",
     numeric: "숫자만 있어 뺌",
@@ -361,7 +361,7 @@
       .filter((group) => group.entries.length > 0);
 
     if (groups.length === 0) {
-      container.innerHTML = '<p class="hint">빠진 낱말이 없습니다.</p>';
+      container.innerHTML = '<p class="hint">빠진 단어가 없습니다.</p>';
       return;
     }
 
@@ -371,7 +371,7 @@
         <details class="removed-group" data-open-key="removed:${group.key}">
           <summary>${escapeHtml(group.label)} — ${group.entries.length}종
             (모두 ${group.entries.reduce((sum, entry) => sum + entry[1], 0)}번)</summary>
-          <p class="removed-hint">낱말을 누르면 되살립니다.</p>
+          <p class="removed-hint">단어를 누르면 되살립니다.</p>
           <div class="removed-words">
             ${group.entries
               .map(
@@ -400,7 +400,7 @@
       <table>
         <thead>
           <tr>
-            <th>낱말</th>
+            <th>단어</th>
             <th>모두 몇 번</th>
             <th>DF (몇 편에)</th>
             <th>IDF</th>
@@ -434,7 +434,7 @@
 
     container.innerHTML = `
       <table>
-        <thead><tr><th>낱말</th>${header}</tr></thead>
+        <thead><tr><th>단어</th>${header}</tr></thead>
         <tbody>
           ${rows
             .map((row) => {

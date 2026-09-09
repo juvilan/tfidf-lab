@@ -1143,3 +1143,40 @@ body.clean-view table {
 body.clean-view .tally-card .value {
   font-size: 1.7rem;
 }
+
+/* ---------- 패널 안에 들어가는 설명 상자 ---------- */
+.explain.inner {
+  margin: 0.9rem 0 0;
+  background: var(--surface-soft);
+}
+
+.explain.inner > summary {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.94rem;
+}
+
+.explain.inner .explain-body {
+  padding: 0 0.9rem 0.9rem;
+}
+
+.explain.inner p {
+  margin: 0 0 0.6rem;
+  max-width: 68ch;
+}
+
+.mini-table {
+  width: auto;
+  margin: 0.2rem 0 0.8rem;
+  font-size: 0.9rem;
+}
+
+.mini-table th,
+.mini-table td {
+  padding: 0.3rem 0.9rem 0.3rem 0;
+  white-space: nowrap;
+}
+
+.mini-table thead th {
+  position: static;
+  background: none;
+}
