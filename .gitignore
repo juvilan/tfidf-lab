@@ -1,2 +1,5 @@
 node_modules/
 .DS_Store
+
+# 로컬 미리보기 설정
+.claude/
